@@ -34,7 +34,7 @@ os.makedirs(output_dir, exist_ok=True)
 serifList = ['BreeSerif', 'EBGaramond', 'Georgia', 'PalatinoLinotype', 'Merriweather', 'TimesNewRoman']
 sansList = ['Arial', 'Calibri', 'Comfortaa', 'Montserrat', 'Oxygen', 'Verdana']
 monoList = ['Consolas', 'CourierNew', 'GoogleSansCode', 'RobotoMono', 'SourceCodePro']
-deco1List = ['Aclonica', 'Algerian', 'BowlbyOneSC', 'ComicSansMS', 'Permanentmarker', 'SairaStencil']
+deco1List = ['Aclonica', 'Algerian', 'BowlbyOneSC', 'ComicSansMS', 'PermanentMarker', 'SairaStencil']
 deco2List = ['Caveat', 'Creepster', 'FontdinerSwanky', 'HomemadeApple', 'Pacifico', 'Yellowtail']
 
 #charlist
@@ -82,13 +82,13 @@ for folder in folderList:
             if NRBI[2] == NRBI[3] == 'F':
                 myfont += "Regular"
 
-            font_path = "Fonts\\" + folder + "\\" + myfont + ".ttf"
+            font_path = "12SEN CharacterGenerator/Fonts/" + folder + "/" + myfont + ".ttf"
             try:
                 fontface = ImageFont.truetype(font_path, font_size)
             except:
                 print(f'{font_path} does not exist; using regular')
                 myfont = fontname + "-Regular"
-                font_path = "Fonts\\" + folder + "\\" + myfont + ".ttf"
+                font_path = "Fonts/" + folder + "/" + myfont + ".ttf"
                 fontface = ImageFont.truetype(font_path, font_size)
                 NRBI[2] = 'F'
                 NRBI[3] = 'F'
@@ -119,11 +119,3 @@ for folder in folderList:
                 NRBI[0] = 'T'
             
             img.save(os.path.join(output_dir, f"{myfont}_{''.join(NRBI)}_{letter}.png"))
-                
-
-
-
-
-
-
-
