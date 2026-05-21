@@ -7,6 +7,20 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 from random import randint
 
+#Set which fonts and variations to use
+complexity = 3      #1-4
+noise = False
+rotation = True
+bold = True
+italic = True
+
+#Output settings
+size = 28
+img_size = (size, size)
+font_sizes = {'Aclonica': 24, 'BowlbyOneSC': 24, 'FontdinerSwanky': 24, 'HomemadeApple': 18, 'Pacifico': 24}
+#Default font size is 28pt; if a font needs a custom size, add it to the dictionary above
+output_dir = "character_images"
+
 def generateFontCharacters(fontname):
     print(f'Creating characters for {fontname}...')
     font_size = font_sizes.get(fontname, 28)
@@ -71,20 +85,6 @@ def generateFontCharacters(fontname):
             NRBI[0] = 'T'
         
         img.save(os.path.join(output_dir, f"{myfont}_{''.join(NRBI)}_{letter}.png"))
-
-#Set which fonts and variations to use
-complexity = 3      #1-4
-noise = False
-rotation = True
-bold = True
-italic = True
-
-#Output settings
-size = 28
-img_size = (size, size)
-font_sizes = {'Aclonica': 24, 'BowlbyOneSC': 24, 'FontdinerSwanky': 24, 'HomemadeApple': 18, 'Pacifico': 24}
-#Default font size is 28pt; if a font needs a custom size, add it to the dictionary above
-output_dir = "character_images"
 
 #Create the output directory if it does not exist
 os.makedirs(output_dir, exist_ok=True)
