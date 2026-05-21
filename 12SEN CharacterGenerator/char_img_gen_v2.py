@@ -4,17 +4,18 @@
 #12SEN26
 
 from PIL import Image, ImageDraw, ImageFont
-from pathlib import Path
 import os
-import string
 from random import randint
 
 #Set which fonts and variations to use
 complexity = 4      #1-4
-noise = False
-rotation = False
-bold = False
-italic = False
+noise = True
+rotation = True
+bold = True
+italic = True
+
+#Amount of samples for each character in each font
+num_images = 200
 
 #Output settings
 size = 28
@@ -23,42 +24,11 @@ font_sizes = {'Aclonica': 24, 'BowlbyOneSC': 24, 'FontdinerSwanky': 24, 'Homemad
 #Default font size is 28pt; if a font needs a custom size, add it to the dictionary above
 output_dir = "character_images"
 
-#Create the output directory if it does not exist
-os.makedirs(output_dir, exist_ok=True)
-
-#Fonts
-#To generate characters for additional fonts:
-# - The filename must be "{fontface}-Regular.ttf" (exactly)
-# - The font file must be in the appropriate subfolder of Fonts
-# - Add the fontface to the appropriate list below
-serifList = ['BreeSerif', 'EBGaramond', 'Georgia', 'PalatinoLinotype', 'Merriweather', 'TimesNewRoman']
-sansList = ['Arial', 'Calibri', 'Comfortaa', 'Montserrat', 'Oxygen', 'Verdana']
-monoList = ['Consolas', 'CourierNew', 'GoogleSansCode', 'RobotoMono', 'SourceCodePro']
-deco1List = ['Aclonica', 'Algerian', 'BowlbyOneSC', 'ComicSansMS', 'PermanentMarker', 'SairaStencil']
-deco2List = ['Caveat', 'Creepster', 'FontdinerSwanky', 'HomemadeApple', 'Pacifico', 'Yellowtail']
-
-#charlist
-characters= [i for i in range(65,91)]     #uppercase
-characters += [i for i in range(97,123)]   #lowercase
-characters += [i for i in range(48,58)]    #numbers
-if complexity >= 3:
-    characters += [ord('@'), ord('#'), ord('$'), ord('%'), ord('&'), ord('+'), ord('?'), ord('<'), ord('>')]
-
-
-#Iterate through the fonts in their subfolders
-folderList = ['Monospace','Sans','Serif']
-if complexity >= 3:
-    folderList.append('Decorative')
-
-fontList = {'Monospace': monoList, 'Sans': sansList, 'Serif': serifList, 'Decorative': deco1List}
-if complexity >= 4:
-    fontList['Decorative'] += deco2List
-
-for folder in folderList:
-    for fontname in fontList[folder]:
-        print(f'Creating characters for {fontname}...')
-        font_size = font_sizes.get(fontname, 28)
-        for letter in characters:
+def generateFontCharacters(fontname, num_images=1):
+    print(f'Creating characters for {fontname}...')
+    font_size = font_sizes.get(fontname, 28)
+    for letter in characters:
+        for i in range(num_images):
             img = Image.new("L", img_size, color=255)
             draw = ImageDraw.Draw(img)
 
@@ -118,4 +88,42 @@ for folder in folderList:
                     img.putpixel((x,y),invert)
                 NRBI[0] = 'T'
             
-            img.save(os.path.join(output_dir, f"{myfont}_{''.join(NRBI)}_{letter}.png"))
+            img.save(os.path.join(output_dir, f"{myfont}_{''.join(NRBI)}_{letter}_{i}.png"))
+
+#Create the output directory if it does not exist
+os.makedirs(output_dir, exist_ok=True)
+
+#Fonts
+#To generate characters for additional fonts:
+# - The filename must be "{fontface}-Regular.ttf" (exactly)
+# - The font file must be in the appropriate subfolder of Fonts
+# - Add the fontface to the appropriate list below
+serifList = ['BreeSerif', 'EBGaramond', 'Georgia', 'PalatinoLinotype', 'Merriweather', 'TimesNewRoman']
+sansList = ['Arial', 'Calibri', 'Comfortaa', 'Montserrat', 'Oxygen', 'Verdana']
+monoList = ['Consolas', 'CourierNew', 'GoogleSansCode', 'RobotoMono', 'SourceCodePro']
+deco1List = ['Aclonica', 'Algerian', 'BowlbyOneSC', 'ComicSansMS', 'PermanentMarker', 'SairaStencil']
+deco2List = ['Caveat', 'Creepster', 'FontdinerSwanky', 'HomemadeApple', 'Pacifico', 'Yellowtail']
+
+#charlist
+characters= [i for i in range(65,91)]     #uppercase
+characters += [i for i in range(97,123)]   #lowercase
+characters += [i for i in range(48,58)]    #numbers
+if complexity >= 3:
+    characters += [ord('@'), ord('#'), ord('$'), ord('%'), ord('&'), ord('+'), ord('?'), ord('<'), ord('>')]
+
+
+#Iterate through the fonts in their subfolders
+folderList = ['Monospace','Sans','Serif']
+if complexity >= 3:
+    folderList.append('Decorative')
+
+fontList = {'Monospace': monoList, 'Sans': sansList, 'Serif': serifList, 'Decorative': deco1List}
+if complexity >= 4:
+    fontList['Decorative'] += deco2List
+
+for folder in folderList:
+    for fontname in fontList[folder]:
+        try:
+            generateFontCharacters(fontname, num_images=num_images)
+        except Exception as e:
+            print(e)
