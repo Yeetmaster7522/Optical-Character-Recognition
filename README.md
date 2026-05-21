@@ -3,4 +3,4 @@ Due Term 2 Week 11, Wednesday 1st July 2026
 
 Goal is to create a good CNN to perform optical character recognition
 
-PYTHON VERSION: 3.12.3
+Running on Python 3.12.3 in a virtual environment
