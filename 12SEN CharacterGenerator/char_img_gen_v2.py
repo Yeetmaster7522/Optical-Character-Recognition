@@ -9,7 +9,7 @@ from random import randint
 
 #Set which fonts and variations to use
 complexity = 3      #1-4
-noise = False
+noise = True
 rotation = True
 bold = True
 italic = True
