@@ -8,11 +8,14 @@ import os
 from random import randint
 
 #Set which fonts and variations to use
-complexity = 3      #1-4
+complexity = 4      #1-4
 noise = True
 rotation = True
 bold = True
 italic = True
+
+#Amount of samples for each character in each font
+num_images = 200
 
 #Output settings
 size = 28
@@ -21,70 +24,71 @@ font_sizes = {'Aclonica': 24, 'BowlbyOneSC': 24, 'FontdinerSwanky': 24, 'Homemad
 #Default font size is 28pt; if a font needs a custom size, add it to the dictionary above
 output_dir = "character_images"
 
-def generateFontCharacters(fontname):
+def generateFontCharacters(fontname, num_images=1):
     print(f'Creating characters for {fontname}...')
     font_size = font_sizes.get(fontname, 28)
     for letter in characters:
-        img = Image.new("L", img_size, color=255)
-        draw = ImageDraw.Draw(img)
+        for i in range(num_images):
+            img = Image.new("L", img_size, color=255)
+            draw = ImageDraw.Draw(img)
 
-        myfont = fontname + "-"
+            myfont = fontname + "-"
 
-        #NRBI[0] Random noise (±10%) added to each image
-        #NRBI[1] Random angle (±20°) applied to each character
-        #NRBI[2] Random characters (30% chance) are set to bold
-        #NRBI[3] Random characters (30% chance) are set to italics
+            #NRBI[0] Random noise (±10%) added to each image
+            #NRBI[1] Random angle (±20°) applied to each character
+            #NRBI[2] Random characters (30% chance) are set to bold
+            #NRBI[3] Random characters (30% chance) are set to italics
 
-        NRBI = ['F','F','F','F']
-        
-        if bold and randint(1,100) <= 30:
-            myfont += "Bold"
-            NRBI[2] = 'T'
+            NRBI = ['F','F','F','F']
             
-        if italic and randint(1,100) <= 30:
-            myfont += "Italic"
-            NRBI[3] = 'T'
+            if bold and randint(1,100) <= 30:
+                myfont += "Bold"
+                NRBI[2] = 'T'
+                
+            if italic and randint(1,100) <= 30:
+                myfont += "Italic"
+                NRBI[3] = 'T'
 
-        if NRBI[2] == NRBI[3] == 'F':
-            myfont += "Regular"
+            if NRBI[2] == NRBI[3] == 'F':
+                myfont += "Regular"
 
-        font_path = "12SEN CharacterGenerator/Fonts/" + folder + "/" + myfont + ".ttf"
-        try:
-            fontface = ImageFont.truetype(font_path, font_size)
-        except:
-            print(f'{font_path} does not exist; using regular')
-            myfont = fontname + "-Regular"
-            font_path = "Fonts/" + folder + "/" + myfont + ".ttf"
-            fontface = ImageFont.truetype(font_path, font_size)
-            NRBI[2] = 'F'
-            NRBI[3] = 'F'
+            font_path = "12SEN CharacterGenerator/Fonts/" + folder + "/" + myfont + ".ttf"
+            try:
+                fontface = ImageFont.truetype(font_path, font_size)
+            except:
+                print(f'{font_path} does not exist; using regular')
+                myfont = fontname + "-Regular"
+                font_path = "Fonts/" + folder + "/" + myfont + ".ttf"
+                fontface = ImageFont.truetype(font_path, font_size)
+                NRBI[2] = 'F'
+                NRBI[3] = 'F'
 
 
-        # ChatGPT did maths - gets the size of the text to position it at the centre of the image
-        bbox = draw.textbbox((0, 0), chr(letter), font=fontface)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
-        position = ((0-bbox[0]+((size-text_width)//2)),(0-bbox[1]+((size-text_height)//2)))
+            # ChatGPT did maths - gets the size of the text to position it at the centre of the image
+            bbox = draw.textbbox((0, 0), chr(letter), font=fontface)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+            position = ((0-bbox[0]+((size-text_width)//2)),(0-bbox[1]+((size-text_height)//2)))
 
-        draw.text(position, chr(letter), fill=False, font=fontface)
-        
+            draw.text(position, chr(letter), fill=False, font=fontface)
+            
 
-        if rotation:
-            r = randint(-20,20)//5*5
-            if r != 0:
-                img = img.rotate(r,resample=Image.Resampling.BICUBIC,fillcolor="white")
-                NRBI[1] = 'T'
+            if rotation:
+                r = randint(-20,20)//5*5
+                if r != 0:
+                    img = img.rotate(r,resample=Image.Resampling.BICUBIC,fillcolor="white")
+                    NRBI[1] = 'T'
 
-        if noise:
-            for i in range(75):
-                x = randint(0,27)
-                y = randint(0,27)
-                current = img.getpixel((x,y))
-                invert = 255 - current
-                img.putpixel((x,y),invert)
-            NRBI[0] = 'T'
-        
-        img.save(os.path.join(output_dir, f"{myfont}_{''.join(NRBI)}_{letter}.png"))
+            if noise:
+                for i in range(75):
+                    x = randint(0,27)
+                    y = randint(0,27)
+                    current = img.getpixel((x,y))
+                    invert = 255 - current
+                    img.putpixel((x,y),invert)
+                NRBI[0] = 'T'
+            
+            img.save(os.path.join(output_dir, f"{myfont}_{''.join(NRBI)}_{letter}_{i}.png"))
 
 #Create the output directory if it does not exist
 os.makedirs(output_dir, exist_ok=True)
@@ -120,6 +124,6 @@ if complexity >= 4:
 for folder in folderList:
     for fontname in fontList[folder]:
         try:
-            generateFontCharacters(fontname)
+            generateFontCharacters(fontname, num_images=num_images)
         except Exception as e:
             print(e)
