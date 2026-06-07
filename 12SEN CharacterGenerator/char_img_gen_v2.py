@@ -15,14 +15,25 @@ bold = True
 italic = True
 
 #Amount of samples for each character in each font
-num_images = 200
+num_images = 50
 
 #Output settings
 size = 28
 img_size = (size, size)
 font_sizes = {'Aclonica': 24, 'BowlbyOneSC': 24, 'FontdinerSwanky': 24, 'HomemadeApple': 18, 'Pacifico': 24}
 #Default font size is 28pt; if a font needs a custom size, add it to the dictionary above
-output_dir = "character_images"
+output_dir = "character_images_no_noise"
+
+#Fonts
+#To generate characters for additional fonts:
+# - The filename must be "{fontface}-Regular.ttf" (exactly)
+# - The font file must be in the appropriate subfolder of Fonts
+# - Add the fontface to the appropriate list below
+serifList = ['BreeSerif', 'EBGaramond', 'Georgia', 'PalatinoLinotype', 'Merriweather', 'TimesNewRoman']
+sansList = ['Arial', 'Calibri', 'Comfortaa', 'Montserrat', 'Oxygen', 'Verdana']
+monoList = ['Consolas', 'CourierNew', 'GoogleSansCode', 'RobotoMono', 'SourceCodePro']
+deco1List = ['Aclonica', 'Algerian', 'BowlbyOneSC', 'ComicSansMS', 'PermanentMarker', 'SairaStencil']
+deco2List = ['Caveat', 'Creepster', 'FontdinerSwanky', 'HomemadeApple', 'Pacifico', 'Yellowtail']
 
 def generateFontCharacters(fontname, num_images=1):
     print(f'Creating characters for {fontname}...')
@@ -56,9 +67,9 @@ def generateFontCharacters(fontname, num_images=1):
             try:
                 fontface = ImageFont.truetype(font_path, font_size)
             except:
-                print(f'{font_path} does not exist; using regular')
+                # print(f'{font_path} does not exist; using regular')
                 myfont = fontname + "-Regular"
-                font_path = "Fonts/" + folder + "/" + myfont + ".ttf"
+                font_path = "12SEN CharacterGenerator/Fonts/" + folder + "/" + myfont + ".ttf"
                 fontface = ImageFont.truetype(font_path, font_size)
                 NRBI[2] = 'F'
                 NRBI[3] = 'F'
@@ -77,10 +88,10 @@ def generateFontCharacters(fontname, num_images=1):
                 r = randint(-20,20)//5*5
                 if r != 0:
                     img = img.rotate(r,resample=Image.Resampling.BICUBIC,fillcolor="white")
-                    NRBI[1] = 'T'
+                NRBI[1] = 'T'
 
             if noise:
-                for i in range(75):
+                for j in range(75):
                     x = randint(0,27)
                     y = randint(0,27)
                     current = img.getpixel((x,y))
@@ -92,17 +103,6 @@ def generateFontCharacters(fontname, num_images=1):
 
 #Create the output directory if it does not exist
 os.makedirs(output_dir, exist_ok=True)
-
-#Fonts
-#To generate characters for additional fonts:
-# - The filename must be "{fontface}-Regular.ttf" (exactly)
-# - The font file must be in the appropriate subfolder of Fonts
-# - Add the fontface to the appropriate list below
-serifList = ['BreeSerif', 'EBGaramond', 'Georgia', 'PalatinoLinotype', 'Merriweather', 'TimesNewRoman']
-sansList = ['Arial', 'Calibri', 'Comfortaa', 'Montserrat', 'Oxygen', 'Verdana']
-monoList = ['Consolas', 'CourierNew', 'GoogleSansCode', 'RobotoMono', 'SourceCodePro']
-deco1List = ['Aclonica', 'Algerian', 'BowlbyOneSC', 'ComicSansMS', 'PermanentMarker', 'SairaStencil']
-deco2List = ['Caveat', 'Creepster', 'FontdinerSwanky', 'HomemadeApple', 'Pacifico', 'Yellowtail']
 
 #charlist
 characters= [i for i in range(65,91)]     #uppercase
@@ -123,7 +123,4 @@ if complexity >= 4:
 
 for folder in folderList:
     for fontname in fontList[folder]:
-        try:
-            generateFontCharacters(fontname, num_images=num_images)
-        except Exception as e:
-            print(e)
+        generateFontCharacters(fontname, num_images=num_images)
