@@ -3,11 +3,15 @@ from torch import nn, save, device, cuda
 
 import matplotlib.pyplot as plt
 
-from models import ocr_v3 as model
+from models import ocr_v2 as model
 from dataloader import trainloader
 
-PATH = "model_3_1.pt"
-EPOCHS = 15
+NAME = "model_2_F" #F=No noise, T=Noise
+SAVE_FOLDER = "models_F"
+EPOCHS = 100
+LR = 1e-3
+TRAINING_LOSS_SAVE_POINT = 0.18
+MAX_PATIENCE = 7
 
 DEVICE = device("cuda" if cuda.is_available() else "cpu")
 
@@ -16,14 +20,16 @@ if __name__ == "__main__":
 
     criterion = nn.CrossEntropyLoss()
     # optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-    optimizer = optim.AdamW(net.parameters(), lr=1e-3)
+    optimizer = optim.AdamW(net.parameters(), lr=LR)
 
     losses = []
+    lowest_loss = TRAINING_LOSS_SAVE_POINT
+    patience_counter = 0
 
     for epoch in range(EPOCHS):
         running_loss = 0.0
         running_losses = []
-        
+ 
         for i, (inputs, labels) in enumerate(trainloader, 0):
             inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
 
@@ -37,14 +43,27 @@ if __name__ == "__main__":
             running_loss += loss.item()
             if i % 200 == 199:    # print every 200 mini-batches
                 print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 200:.3f}')
+                if running_loss / 200 < lowest_loss:
+                    lowest_loss = running_loss / 200
+                    patience_counter = 0
+
+                    save(net.state_dict(), f"{SAVE_FOLDER}/{NAME}_{epoch+1}.pt")
+                    print("Model saved")
+
                 running_losses.append(running_loss/200)
                 running_loss = 0.0
 
-        losses.append(sum(running_losses)/len(running_losses))
+        losses.append(min(running_losses))
+
+        patience_counter += 1
+
+        if patience_counter > MAX_PATIENCE:
+            print("EARLY STOPPING TRIGGERED")
+            break
+        else:
+            print(f"Patience: {patience_counter}/{MAX_PATIENCE}")
 
     print('Finished Training')
-
-    save(net.state_dict(), PATH)
 
     plt.plot([e+1 for e in range(EPOCHS)], losses)
     plt.show()

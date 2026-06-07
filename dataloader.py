@@ -64,13 +64,12 @@ def imshow(img):
 
 transform = v2.Compose([
     v2.ToImage(),
-    v2.ToDtype(float32, scale=True),
-    v2.Normalize((0.5,), (0.5,))
+    v2.ToDtype(float32, scale=True)
 ])
 
-batch_size = 4
+batch_size = 32
 
-dataset = CharacterDataset(root_dir="character_images", transform=transform)
+dataset = CharacterDataset(root_dir="character_images_no_noise", transform=transform)
 generator = Generator().manual_seed(42)
 trainset, testset = random_split(dataset, [0.8, 0.2], generator=generator)
 
