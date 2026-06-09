@@ -1,19 +1,19 @@
 import torch.optim as optim
-from torch import nn, save, device, cuda
+from torch import nn, save, device, accelerator
 
 import matplotlib.pyplot as plt
 
-from models import ocr_v2 as model
-from dataloader import trainloader
+from models import ocr_v4 as model
+from dataloader import trainloader as tl
 
-NAME = "model_2_F" #F=No noise, T=Noise
-SAVE_FOLDER = "models_F"
+NAME = "model_4_T"
+SAVE_FOLDER = "models_T" #F=No noise, T=Noise
 EPOCHS = 100
 LR = 1e-3
 TRAINING_LOSS_SAVE_POINT = 0.18
 MAX_PATIENCE = 7
 
-DEVICE = device("cuda" if cuda.is_available() else "cpu")
+DEVICE = device(accelerator.current_accelerator().type if accelerator.is_available() else 'cpu')
 
 if __name__ == "__main__":
     net = model().to(DEVICE)
@@ -21,10 +21,13 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
     # optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
     optimizer = optim.AdamW(net.parameters(), lr=LR)
+    trainloader = tl
 
     losses = []
     lowest_loss = TRAINING_LOSS_SAVE_POINT
     patience_counter = 0
+
+    print(f"Using device: {DEVICE}")
 
     for epoch in range(EPOCHS):
         running_loss = 0.0
@@ -65,5 +68,5 @@ if __name__ == "__main__":
 
     print('Finished Training')
 
-    plt.plot([e+1 for e in range(EPOCHS)], losses)
+    plt.plot([e+1 for e in range(len(losses))], losses)
     plt.show()
