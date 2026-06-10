@@ -1,9 +1,24 @@
 # Software AT3
 ## Due Term 2 Week 11, Wednesday 1st July 2026
 
-Goal is to create a good CNN to perform optical character recognition. ***Running on Python 3.12.3 in a virtual environment***
+Goal is to create a good CNN to perform optical character recognition. ***Running on Python 3.12.3 in a virtual environment***. Execution does not require a virtual environment however it is suggested.
 
-### Model accuracy (validationset with noise) as of 10/06/26:
+---
+
+### Dependencies
+
+Requires PyTorch, Torchvision, Matplotlib, Numpy, and Pillow.
+
+> Commands below will install all dependencies:
+>
+> - pip install torch torchvision
+> - pip install matplotlib
+>
+> To install PyTorch with GPU support visit [this page](https://pytorch.org/get-started/locally/) for more details
+
+---
+
+### Model accuracy (validation set with noise) as of 10/06/2, 00:00:
 > #### Trained on images without noise
 >
 > - model_1_F_23: *94%*
@@ -17,3 +32,7 @@ Goal is to create a good CNN to perform optical character recognition. ***Runnin
 > - model_2_T_69: *98%*
 > - model_3_T_36: *98%*
 > - model_4_T_39: *97%*
+
+
+NOTES
+Get google library fonts
