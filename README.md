@@ -36,3 +36,4 @@ Requires PyTorch, Torchvision, Matplotlib, Numpy, and Pillow.
 
 NOTES
 Get google library fonts
+make dataloader close images with pillow
