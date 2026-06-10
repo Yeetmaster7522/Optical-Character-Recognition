@@ -3,6 +3,7 @@ from torch import max as tmax
 
 from models import ocr_v4 as model
 from dataloader import testloader as tl
+from dataloader import char_to_idx as cti
 
 PATH = "models_T/model_4_T_27.pt"
 DEVICE = device(accelerator.current_accelerator().type if accelerator.is_available() else 'cpu')
@@ -16,6 +17,9 @@ if __name__ == "__main__":
     correct = 0
     total = 0
 
+    class_correct = {classname: 0 for classname in cti}
+    class_total = {classname: 0 for classname in cti}
+
     with no_grad():
         print("Validation started")
 
@@ -23,34 +27,18 @@ if __name__ == "__main__":
             images, labels = images.to(DEVICE), labels.to(DEVICE)
 
             outputs = net(images)
-            
             _, predicted = tmax(outputs, 1)
+
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-    print(f"Accuracy [{total}]: {100 * correct // total}%")
+            for label, prediction in zip(labels, predicted):
+                if label == prediction:
+                    class_correct[cti[label]] += 1
+                class_total[cti[label]] += 1
 
+    print(f"Accuracy [{total}]: {100 * correct / total:.3f}%")
 
-"""
-# prepare to count predictions for each class
-correct_pred = {classname: 0 for classname in classes}
-total_pred = {classname: 0 for classname in classes}
-
-# again no gradients needed
-with torch.no_grad():
-    for data in testloader:
-        images, labels = data
-        outputs = net(images)
-        _, predictions = torch.max(outputs, 1)
-        # collect the correct predictions for each class
-        for label, prediction in zip(labels, predictions):
-            if label == prediction:
-                correct_pred[classes[label]] += 1
-            total_pred[classes[label]] += 1
-
-
-# print accuracy for each class
-for classname, correct_count in correct_pred.items():
-    accuracy = 100 * float(correct_count) / total_pred[classname]
-    print(f'Accuracy for class: {classname:5s} is {accuracy:.1f} %')
-"""
+    for classname, correct_count in class_correct.items():
+        accuracy = 100 * float(correct_count) / class_total[classname]
+        print(f"Accuracy for class: {classname:5s} is {accuracy:.1f} %")
