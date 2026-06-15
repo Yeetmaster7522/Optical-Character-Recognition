@@ -47,11 +47,11 @@ class CharacterDataset(Dataset):
             idx = idx.tolist()
 
         filepath = os.path.join(self.root_dir, self.images[idx]["filename"])
-        image = Image.open(filepath)
-        image = image.convert("L") # grayscale
+        with Image.open(filepath) as image:
+            image = image.convert("L") # grayscale
 
-        if self.transform:
-            image = self.transform(image)
+            if self.transform:
+                image = self.transform(image)
 
         return image, self.images[idx]["label"]
     

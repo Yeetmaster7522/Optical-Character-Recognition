@@ -32,8 +32,3 @@ Requires PyTorch, Torchvision, Matplotlib, Numpy, and Pillow.
 > - model_2_T_69: *98%*
 > - model_3_T_36: *98%*
 > - model_4_T_39: *97%*
-
-
-NOTES
-Get google library fonts
-make dataloader close images with pillow
