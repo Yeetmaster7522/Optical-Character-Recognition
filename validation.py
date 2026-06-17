@@ -1,5 +1,6 @@
 from torch import load, device, accelerator, no_grad
 from torch import max as tmax
+import pandas as pd
 
 from models import ocr_v1 as model
 from dataloader import TrainTestLoader, CHARSET
@@ -58,6 +59,17 @@ class Validator:
         for classname, correct_count in class_correct.items():
             accuracy = 100 * float(correct_count) / class_total[classname]
             print(f"Accuracy for class: {classname} is {accuracy:.3f}%")
+
+    def to_df(self, **kwargs):
+        """
+        File name (name, not path)
+        predicted letter
+        result (Pass, Fail)
+        confidence score (2 d.p.)
+        """
+
+        df = pd.DataFrame(kwargs)
+        return df
 
 if __name__ == "__main__":
     validator = Validator(

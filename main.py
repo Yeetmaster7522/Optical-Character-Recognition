@@ -1,9 +1,11 @@
-import os
-
 import models
+from training import Trainer
+from validation import Validator
 
 class Main:
     def __init__(self, model_dir="", data_dir="", predict_dir=""):
+        print("WELCOME")
+        
         self.model_classes = [
             models.ocr_v1,
             models.ocr_v2,
@@ -13,6 +15,8 @@ class Main:
         self.model_dir = model_dir
         self.data_dir = data_dir
         self.predict_dir = predict_dir
+
+        self.get_directories()
 
     def get_directories(self):
         if self.model_dir == "":
@@ -43,20 +47,28 @@ class Main:
             self.train()
         elif choice == "p":
             print("Prediction mode chosen")
+            self.predict()
         else:
             print("Invalid input")
 
     def train(self):
-        self.get_directories()
-
         self.list_models()
         model_i = int(input("Select model type from above: "))
-        model = self.model_classes[model_i]()
-        # NOTE NEED TO LINK TO TRAINING.PY AND VALIDATION.PY
+        model = self.model_classes[model_i]
+
+        name = str(input("What name would you like to give the model? "))
+
+        trainer = Trainer(
+            name=name,
+            model=model,
+            save_folder=self.model_dir,
+            root_dir=self.data_dir
+        )
+        losses = trainer.train()
+        print("Training Finished!")
+        trainer.plot(losses)
 
     def predict(self):
-        self.get_directories()
-
         self.list_models()
         model_i = int(input("Select model type from above: "))
         model = self.model_classes[model_i]()

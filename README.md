@@ -13,6 +13,7 @@ Requires PyTorch, Torchvision, Matplotlib, Numpy, and Pillow.
 >
 > - pip install torch torchvision
 > - pip install matplotlib
+> - pip install pandas
 >
 > To install PyTorch with GPU support visit [this page](https://pytorch.org/get-started/locally/) for more details
 
