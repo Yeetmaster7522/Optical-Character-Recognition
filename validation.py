@@ -77,4 +77,4 @@ if __name__ == "__main__":
         model=model,
         root_dir="dataset/character_images_no_noise"
     )
-    validator.check_accuracy()
+    validator.check_overall_acc()

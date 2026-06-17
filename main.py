@@ -1,9 +1,11 @@
+import os
+
 import models
 from training import Trainer
 from validation import Validator
 
 class Main:
-    def __init__(self, model_dir="", data_dir="", predict_dir=""):
+    def __init__(self, model_dir="", data_dir="", test_dir=""):
         print("WELCOME")
         
         self.model_classes = [
@@ -14,7 +16,7 @@ class Main:
         ]
         self.model_dir = model_dir
         self.data_dir = data_dir
-        self.predict_dir = predict_dir
+        self.test_dir = test_dir
 
         self.get_directories()
 
@@ -25,8 +27,10 @@ class Main:
         if self.data_dir == "":
             self.data_dir = str(input("Which folder contains training data? "))
 
-        if self.predict_dir == "":
-            self.predict_dir = str(input("Which folder contains images that need to be predicted? "))
+        if self.test_dir == "":
+            self.test_dir = str(input("Which folder contains images that need to be predicted?\nLeave blank if using same folder for training data "))
+            if self.test_dir == "":
+                self.test_dir == self.data_dir
 
     def list_models(self):
         for i in range(len(self.model_classes)):
@@ -47,19 +51,19 @@ class Main:
             self.train()
         elif choice == "p":
             print("Prediction mode chosen")
-            self.predict()
+            self.test()
         else:
             print("Invalid input")
 
     def train(self):
         self.list_models()
-        model_i = int(input("Select model type from above: "))
-        model = self.model_classes[model_i]
+        model_idx = int(input("Select model type from above: "))
+        model = self.model_classes[model_idx]
 
-        name = str(input("What name would you like to give the model? "))
+        print(f"Model will be saved as: {model.__name__}\nIn folder: {self.model_dir}")
 
         trainer = Trainer(
-            name=name,
+            name=model.__name__,
             model=model,
             save_folder=self.model_dir,
             root_dir=self.data_dir
@@ -68,11 +72,22 @@ class Main:
         print("Training Finished!")
         trainer.plot(losses)
 
-    def predict(self):
+    def test(self):
         self.list_models()
-        model_i = int(input("Select model type from above: "))
-        model = self.model_classes[model_i]()
-        # NOTE NEED TO LINK TO VALIDATION.PY
+        model_idx = int(input("Select model type from above: "))
+        model = self.model_classes[model_idx]
+        
+        files = [f for f in os.listdir(self.model_dir) if model.__name__ in f]
+        for i in range(len(files)):
+            print(f"[{i}]: {files[i]}")
+
+        saved_idx = int(input("Select saved model from above: "))
+
+        validator = Validator(
+            path=f"models/models_F/{files[saved_idx]}",
+            model=model,
+            root_dir=self.test_dir
+        )
 
 
 
