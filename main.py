@@ -52,7 +52,7 @@ class Main:
         self.list_models()
         model_i = int(input("Select model type from above: "))
         model = self.model_classes[model_i]()
-        # NOTE NEED TO LINK TO TRAINING.PY AND THEN VALIDATE IT
+        # NOTE NEED TO LINK TO TRAINING.PY AND VALIDATION.PY
 
     def predict(self):
         self.get_directories()
@@ -60,7 +60,7 @@ class Main:
         self.list_models()
         model_i = int(input("Select model type from above: "))
         model = self.model_classes[model_i]()
-        # NOTE NEED TO LINK TO NEW PREDICTION.PY
+        # NOTE NEED TO LINK TO VALIDATION.PY
 
 
 

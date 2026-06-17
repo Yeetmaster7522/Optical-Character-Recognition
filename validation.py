@@ -13,7 +13,7 @@ class Validator:
         self.device = device(accelerator.current_accelerator().type if accelerator.is_available() else 'cpu')
         print(f"Using device: {self.device}")
 
-    def check_accuracy(self):
+    def check_overall_acc(self):
         net = self.model().to(self.device)
         net.load_state_dict(load(self.path, weights_only=True))
 
@@ -22,12 +22,7 @@ class Validator:
         correct = 0
         total = 0
 
-        class_correct = {classname: 0 for classname in CHARSET}
-        class_total = {classname: 0 for classname in CHARSET}
-
         with no_grad():
-            print("Validation started")
-
             for images, labels in tl:
                 images, labels = images.to(self.device), labels.to(self.device)
 
@@ -37,12 +32,28 @@ class Validator:
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
 
+        print(f"Accuracy [{total}]: {100 * correct / total:.3f}%")
+
+    def check_class_acc(self):
+        net = self.model().to(self.device)
+        net.load_state_dict(load(self.path, weights_only=True))
+
+        tl = TrainTestLoader(root_dir=self.root_dir).trainloader
+
+        class_correct = {classname: 0 for classname in CHARSET}
+        class_total = {classname: 0 for classname in CHARSET}
+
+        with no_grad():
+            for images, labels in tl:
+                images, labels = images.to(self.device), labels.to(self.device)
+
+                outputs = net(images)
+                _, predicted = tmax(outputs, 1)
+
                 for label, prediction in zip(labels, predicted):
                     if label == prediction:
                         class_correct[CHARSET[int(label)]] += 1
                     class_total[CHARSET[int(label)]] += 1
-
-        print(f"Accuracy [{total}]: {100 * correct / total:.3f}%")
 
         for classname, correct_count in class_correct.items():
             accuracy = 100 * float(correct_count) / class_total[classname]
