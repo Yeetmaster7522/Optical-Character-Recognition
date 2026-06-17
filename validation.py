@@ -3,7 +3,7 @@ from torch import max as tmax
 
 from models import ocr_v1 as model
 from dataloader import TrainTestLoader as ttl
-from dataloader import char_to_idx as cti
+from dataloader import CHARSET
 
 PATH = "models/models_F/model_1_F_3.pt"
 DEVICE = device(accelerator.current_accelerator().type if accelerator.is_available() else 'cpu')
@@ -19,8 +19,8 @@ if __name__ == "__main__":
     correct = 0
     total = 0
 
-    class_correct = {classname: 0 for classname in cti}
-    class_total = {classname: 0 for classname in cti}
+    class_correct = {classname: 0 for classname in CHARSET}
+    class_total = {classname: 0 for classname in CHARSET}
 
     with no_grad():
         print("Validation started")
@@ -34,13 +34,13 @@ if __name__ == "__main__":
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-            # for label, prediction in zip(labels, predicted):
-            #     if label == prediction:
-            #         class_correct[cti[label]] += 1
-            #     class_total[cti[label]] += 1
+            for label, prediction in zip(labels, predicted):
+                if label == prediction:
+                    class_correct[CHARSET[int(label)]] += 1
+                class_total[CHARSET[int(label)]] += 1
 
     print(f"Accuracy [{total}]: {100 * correct / total:.3f}%")
 
-    # for classname, correct_count in class_correct.items():
-    #     accuracy = 100 * float(correct_count) / class_total[classname]
-    #     print(f"Accuracy for class: {classname:5s} is {accuracy:.1f} %")
+    for classname, correct_count in class_correct.items():
+        accuracy = 100 * float(correct_count) / class_total[classname]
+        print(f"Accuracy for class: {classname} is {accuracy:.3f}%")
