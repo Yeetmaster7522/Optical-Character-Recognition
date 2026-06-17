@@ -3,11 +3,12 @@ from torch import nn, save, device, accelerator
 
 import matplotlib.pyplot as plt
 
-from models import ocr_v4 as model
-from dataloader import trainloader as tl
+from models import ocr_v1 as model
+from dataloader import TrainTestLoader as ttl
 
-NAME = "model_4_T"
-SAVE_FOLDER = "models_T" #F=No noise, T=Noise
+NAME = "model_1_F"
+SAVE_FOLDER = "models/models_F" #F=No noise, T=Noise
+ROOT_DIR = "dataset/character_images_no_noise"
 EPOCHS = 100
 LR = 1e-3
 TRAINING_LOSS_SAVE_POINT = 0.18
@@ -21,7 +22,7 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
     # optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
     optimizer = optim.AdamW(net.parameters(), lr=LR)
-    trainloader = tl
+    tl = ttl(root_dir=ROOT_DIR).trainloader
 
     losses = []
     lowest_loss = TRAINING_LOSS_SAVE_POINT
@@ -33,7 +34,7 @@ if __name__ == "__main__":
         running_loss = 0.0
         running_losses = []
  
-        for i, (inputs, labels) in enumerate(trainloader, 0):
+        for i, (inputs, labels) in enumerate(tl, 0):
             inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
 
             optimizer.zero_grad()

@@ -55,7 +55,7 @@ class CharacterDataset(Dataset):
 
         return image, self.images[idx]["label"]
     
-class TrainSetLoader:
+class TrainTestLoader:
     def __init__(self, root_dir, seed=42, split=0.2, batch_size=32):
         transform = v2.Compose([
             v2.ToImage(),
@@ -78,10 +78,10 @@ def imshow(img):
 
 
 if __name__ == "__main__":
-    tsl = TrainSetLoader(root_dir="character_images_no_noise")
+    ttl = TrainTestLoader(root_dir="character_images_no_noise")
 
-    print(f"Amount of items in dataset: {len(tsl.dataset)}")
-    dataiter = iter(tsl.trainloader)
+    print(f"Amount of items in dataset: {len(ttl.dataset)}")
+    dataiter = iter(ttl.trainloader)
     images, labels = next(dataiter)
     imshow(make_grid(images))
-    print(" ".join(f"{labels[j].item():5}" for j in range(tsl.batch_size)))
+    print(" ".join(f"{labels[j].item():5}" for j in range(ttl.batch_size)))
