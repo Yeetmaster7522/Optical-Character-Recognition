@@ -55,6 +55,20 @@ class CharacterDataset(Dataset):
 
         return image, self.images[idx]["label"]
     
+class TrainSetLoader:
+    def __init__(self, root_dir, seed=42, split=0.2, batch_size=32):
+        transform = v2.Compose([
+            v2.ToImage(),
+            v2.ToDtype(float32, scale=True)
+        ])
+        generator = Generator().manual_seed(seed)
+
+        self.dataset = CharacterDataset(root_dir=root_dir, transform=transform)
+        trainset, testset = random_split(self.dataset, [1-split, split], generator=generator)
+
+        self.trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
+        self.testloader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
+        self.batch_size = batch_size
 
 def imshow(img):
     img = img / 2 + 0.5
@@ -62,24 +76,12 @@ def imshow(img):
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
 
-transform = v2.Compose([
-    v2.ToImage(),
-    v2.ToDtype(float32, scale=True)
-])
-
-batch_size = 32
-
-dataset = CharacterDataset(root_dir="character_images_no_noise", transform=transform)
-generator = Generator().manual_seed(42)
-trainset, testset = random_split(dataset, [0.8, 0.2], generator=generator)
-
-trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
-testloader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
-
 
 if __name__ == "__main__":
-    print(f"Amount of items in dataset: {len(dataset)}")
-    dataiter = iter(trainloader)
+    tsl = TrainSetLoader(root_dir="character_images_no_noise")
+
+    print(f"Amount of items in dataset: {len(tsl.dataset)}")
+    dataiter = iter(tsl.trainloader)
     images, labels = next(dataiter)
     imshow(make_grid(images))
-    print(" ".join(f"{labels[j].item():5}" for j in range(batch_size)))
+    print(" ".join(f"{labels[j].item():5}" for j in range(tsl.batch_size)))
