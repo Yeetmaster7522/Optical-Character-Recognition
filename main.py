@@ -1,10 +1,40 @@
+import os
+
+import models
+
 class Main:
-    def __init__(self):
-        pass
+    def __init__(self, model_dir="", data_dir="", predict_dir=""):
+        self.model_classes = [
+            models.ocr_v1,
+            models.ocr_v2,
+            models.ocr_v3,
+            models.ocr_v4,
+        ]
+        self.model_dir = model_dir
+        self.data_dir = data_dir
+        self.predict_dir = predict_dir
+
+    def get_directories(self):
+        if self.model_dir == "":
+            self.model_dir = str(input("Which folder do I read and write models from and to? "))
+        
+        if self.data_dir == "":
+            self.data_dir = str(input("Which folder contains training data? "))
+
+        if self.predict_dir == "":
+            self.predict_dir = str(input("Which folder contains images that need to be predicted? "))
+
+    def list_models(self):
+        for i in range(len(self.model_classes)):
+            print(f"[{i}]: {self.model_classes[i].__name__}")
 
     def loop(self):
         while True:
             user_inp = str(input("\nTraining or prediction mode?\n(T for train, P for predict)\n")).lower()
+
+            if user_inp == "exit":
+                break
+
             self.select_train_pred(user_inp)
 
     def select_train_pred(self, choice):
@@ -16,11 +46,27 @@ class Main:
         else:
             print("Invalid input")
 
-    def train(root_dir):
-        root_dir
+    def train(self):
+        self.get_directories()
+
+        self.list_models()
+        model_i = int(input("Select model type from above: "))
+        model = self.model_classes[model_i]()
+        # NOTE NEED TO LINK TO TRAINING.PY AND THEN VALIDATE IT
+
+    def predict(self):
+        self.get_directories()
+
+        self.list_models()
+        model_i = int(input("Select model type from above: "))
+        model = self.model_classes[model_i]()
+        # NOTE NEED TO LINK TO NEW PREDICTION.PY
 
 
 
 if __name__ == "__main__":
-    main = Main()
+    main = Main(
+        model_dir="models/models_F", 
+        data_dir="dataset/character_images_no_noise"
+    )
     main.loop()
