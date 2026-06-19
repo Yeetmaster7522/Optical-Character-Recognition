@@ -3,7 +3,7 @@ from torch import max as tmax
 from torch.nn.functional import softmax
 import pandas as pd
 
-from dataloader import TrainTestLoader, CHARSET
+from dataloader import TrainTestLoader
 
 class Validator:
     def __init__(self, path, model, root_dir):
