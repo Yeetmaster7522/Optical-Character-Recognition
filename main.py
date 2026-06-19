@@ -38,9 +38,9 @@ class Main:
 
     def loop(self):
         while True:
-            user_inp = str(input("\nTraining or prediction mode?\n(T for train, P for predict)\n")).lower()
+            user_inp = str(input("\nWhat would you like to do?\n(T for train, P for predict, E for exit)\n")).lower()
 
-            if user_inp == "exit":
+            if user_inp == "e":
                 break
 
             self.select_train_pred(user_inp)

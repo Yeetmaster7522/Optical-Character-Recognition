@@ -17,17 +17,25 @@ class Validator:
         net = self.model().to(self.device)
         net.load_state_dict(load(self.path, weights_only=True))
 
-        tl = TrainTestLoader(root_dir=self.root_dir).trainloader
+        ttl = TrainTestLoader(root_dir=self.root_dir)
+        tl = ttl.trainloader
+        dataset = ttl.dataset
 
         correct = 0
         total = 0
 
         with no_grad():
-            for images, labels in tl:
+            for i, (images, labels) in enumerate(tl):
                 images, labels = images.to(self.device), labels.to(self.device)
 
                 outputs = net(images)
                 _, predicted = tmax(outputs, 1)
+                # file_name = dataset.basenames[idx]
+                # print(tl.__getitem__(i))
+                # print(dataset.__getitem__(i))
+                # subset_targets = [tl.dataset.targets[i] for i in tl.indices]
+                print(images, labels)
+                break
 
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()

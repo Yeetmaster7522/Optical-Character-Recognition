@@ -70,6 +70,8 @@ class TrainTestLoader:
         self.testloader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
         self.batch_size = batch_size
 
+        print(type(trainset), type(self.trainloader))
+
 def imshow(img):
     img = img / 2 + 0.5
     npimg = img.numpy()
