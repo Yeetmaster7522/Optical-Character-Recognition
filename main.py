@@ -77,8 +77,8 @@ class Main:
 
         epochs = [e+1 for e in range(len(tloss))]
 
-        plt.plot(epochs, tloss, color="blue", label="Train loss")
-        plt.plot(epochs, vloss, color="red", label="Test loss")
+        plt.plot(epochs, tloss, color="red", label="Train loss")
+        plt.plot(epochs, vloss, color="green", label="Test loss")
         
         plt.plot(epochs, [abs(t-vloss[i]) for i,t in enumerate(tloss)], color="blue", linestyle="-.", label="Loss diff")
         
