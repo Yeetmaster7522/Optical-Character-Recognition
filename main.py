@@ -101,8 +101,8 @@ class Main:
 
 if __name__ == "__main__":
     main = Main(
-        model_dir="models/models_T", 
-        data_dir="dataset/character_images_no_noise",
-        test_dir="dataset/new_test"
+        # model_dir="models/models_T", 
+        # data_dir="dataset/character_images_no_noise",
+        # test_dir="dataset/new_test"
     )
     main.loop()

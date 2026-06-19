@@ -1,4 +1,5 @@
 models/
+new_models/
 dataset/
 __pycache__/
 .venv/

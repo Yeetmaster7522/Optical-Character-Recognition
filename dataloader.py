@@ -56,7 +56,7 @@ class CharacterDataset(Dataset):
         return image, self.images[idx]["label"]
     
 class TrainTestLoader:
-    def __init__(self, root_dir, seed=42, split=0.2, batch_size=32):
+    def __init__(self, root_dir, seed=42, split=0.2, batch_size=128):
         transform = v2.Compose([
             v2.ToImage(),
             v2.ToDtype(float32, scale=True)
