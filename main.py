@@ -1,4 +1,5 @@
 import os
+import matplotlib.pyplot as plt
 
 import models
 from training import Trainer
@@ -71,10 +72,17 @@ class Main:
             save_folder=self.model_dir,
             root_dir=self.data_dir
         )
-        losses = trainer.train()
+        tloss, vloss = trainer.train()
         print("Training Finished!")
-        trainer.plot(losses)
 
+        plt.plot([e+1 for e in range(len(tloss))], tloss, color="blue", label="Train loss")
+        plt.plot([e+1 for e in range(len(vloss))], vloss, color="red", label="Test loss")
+        
+        plt.xlabel("Epochs")
+        plt.ylabel("Loss")
+        plt.legend()
+        plt.show()
+        
     def test(self):
         self.list_models()
         model_idx = int(input("Select model type from above: "))
@@ -101,8 +109,8 @@ class Main:
 
 if __name__ == "__main__":
     main = Main(
-        # model_dir="models/models_T", 
-        # data_dir="dataset/character_images_no_noise",
-        # test_dir="dataset/new_test"
+        model_dir="new_models/models_T", 
+        data_dir="dataset/character_images_with_noise",
+        test_dir="dataset/new_test"
     )
     main.loop()

@@ -45,7 +45,9 @@ class Trainer:
         trainloader = ttl.trainloader
         testloader = ttl.testloader
 
+        tlosses = []
         vlosses = []
+
         lowest_loss = self.training_loss_save_point
         patience_counter = 0
 
@@ -80,15 +82,18 @@ class Trainer:
 
                     running_vloss += vloss.item()
 
+            tloss = running_loss / len(trainloader)
             vloss = running_vloss/len(testloader)
+
+            tlosses.append(tloss)
             vlosses.append(vloss)
 
-            print(f'loss: {running_loss / len(trainloader):.3f}\nvloss: {vloss:.3f}')
+            print(f'loss: {tloss:.3f}\nvloss: {vloss:.3f}')
 
             if vloss < lowest_loss:
                 lowest_loss = vloss
                 patience_counter = 0
-                self.save_model(net.state_dict(), f"{self.save_folder}/{self.name}_{epoch+1}.pt")
+                self.save_model(net.state_dict(), f"{self.save_folder}/{self.name}_t{tloss:.3f}_v{vloss:.3f}.pt")
             else:
                 patience_counter += 1
 
@@ -98,11 +103,7 @@ class Trainer:
             else:
                 print(f"Patience: {patience_counter}/{self.max_patience}")
 
-        return vlosses
-
-    def plot(self, values):
-        plt.plot([e+1 for e in range(len(values))], values)
-        plt.show()
+        return tlosses, vlosses
 
 if __name__ == "__main__":
     trainer = Trainer(
@@ -112,6 +113,8 @@ if __name__ == "__main__":
         root_dir="dataset/character_images_no_noise",
         max_epochs=3
     )
-    losses = trainer.train()
+    tloss, vloss = trainer.train()
     print("Training Finished!")
-    trainer.plot(losses)
+    plt.plot([e+1 for e in range(len(tloss))], tloss)
+    plt.plot([e+1 for e in range(len(vloss))], vloss)
+    plt.show()
