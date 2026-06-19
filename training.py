@@ -1,10 +1,10 @@
 import torch.optim as optim
-from torch import nn, save, device, accelerator
+from torch import nn, save, device, accelerator, no_grad
 
 import matplotlib.pyplot as plt
 
 from models import ocr_v1 as model
-from dataloader import TrainTestLoader as ttl
+from dataloader import TrainTestLoader as TTL
 
 class Trainer:
     def __init__(
@@ -41,17 +41,19 @@ class Trainer:
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.AdamW(net.parameters(), lr=self.lr)
 
-        tl = ttl(root_dir=self.root_dir).trainloader
+        ttl = TTL(root_dir=self.root_dir)
+        trainloader = ttl.trainloader
+        testloader = ttl.testloader
 
-        losses = []
+        vlosses = []
         lowest_loss = self.training_loss_save_point
         patience_counter = 0
 
         for epoch in range(self.max_epochs):
-            running_loss = 0.0
-            running_losses = []
+            net.train()
+            running_loss = 0
     
-            for i, (inputs, labels) in enumerate(tl, 0):
+            for i, (inputs, labels) in enumerate(trainloader, 0):
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
 
                 optimizer.zero_grad()
@@ -62,20 +64,33 @@ class Trainer:
                 optimizer.step()
 
                 running_loss += loss.item()
+
                 if i % 200 == 199:    # print every 200 mini-batches
-                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 200:.3f}')
-                    if running_loss / 200 < lowest_loss:
-                        lowest_loss = running_loss / 200
-                        patience_counter = 0
+                    print(f'[{epoch + 1}, {i + 1:5d}]')
 
-                        self.save_model(net.state_dict(), f"{self.save_folder}/{self.name}_{epoch+1}.pt")
+            net.eval()
+            running_vloss = 0
 
-                    running_losses.append(running_loss/200)
-                    running_loss = 0.0
+            with no_grad():
+                for vinputs, vlabels in testloader:
+                    vinputs, vlabels = vinputs.to(self.device), vlabels.to(self.device)
 
-            losses.append(min(running_losses))
+                    voutputs = net(vinputs)
+                    vloss = criterion(voutputs, vlabels)
 
-            patience_counter += 1
+                    running_vloss += vloss.item()
+
+            vloss = running_vloss/len(testloader)
+            vlosses.append(vloss)
+
+            print(f'loss: {running_loss / len(trainloader):.3f}\nvloss: {vloss:.3f}')
+
+            if vloss < lowest_loss:
+                lowest_loss = vloss
+                patience_counter = 0
+                self.save_model(net.state_dict(), f"{self.save_folder}/{self.name}_{epoch+1}.pt")
+            else:
+                patience_counter += 1
 
             if patience_counter > self.max_patience:
                 print("EARLY STOPPING TRIGGERED")
@@ -83,7 +98,7 @@ class Trainer:
             else:
                 print(f"Patience: {patience_counter}/{self.max_patience}")
 
-        return losses
+        return vlosses
 
     def plot(self, values):
         plt.plot([e+1 for e in range(len(values))], values)
@@ -91,7 +106,7 @@ class Trainer:
 
 if __name__ == "__main__":
     trainer = Trainer(
-        name="model_1_F",
+        name=model.__name__,
         model=model,
         save_folder="models/models_F",
         root_dir="dataset/character_images_no_noise",

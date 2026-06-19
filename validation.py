@@ -35,6 +35,8 @@ class Validator:
             "confidence score": []
         }
 
+        net.eval()
+
         with no_grad():
             for i, (images, labels) in enumerate(tl):
                 images, labels = images.to(self.device), labels.to(self.device)
