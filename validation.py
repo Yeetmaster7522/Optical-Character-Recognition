@@ -2,7 +2,6 @@ from torch import load, device, accelerator, no_grad
 from torch import max as tmax
 import pandas as pd
 
-from models import ocr_v1 as model
 from dataloader import TrainTestLoader, CHARSET
 
 class Validator:
@@ -72,8 +71,10 @@ class Validator:
         return df
 
 if __name__ == "__main__":
+    from models import ocr_v2 as model
+
     validator = Validator(
-        path="models/models_F/model_1_F_3.pt",
+        path="models/models_F/ocr_v2_F_5.pt",
         model=model,
         root_dir="dataset/character_images_no_noise"
     )
