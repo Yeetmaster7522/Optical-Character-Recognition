@@ -75,8 +75,12 @@ class Main:
         tloss, vloss = trainer.train()
         print("Training Finished!")
 
-        plt.plot([e+1 for e in range(len(tloss))], tloss, color="blue", label="Train loss")
-        plt.plot([e+1 for e in range(len(vloss))], vloss, color="red", label="Test loss")
+        epochs = [e+1 for e in range(len(tloss))]
+
+        plt.plot(epochs, tloss, color="blue", label="Train loss")
+        plt.plot(epochs, vloss, color="red", label="Test loss")
+        
+        plt.plot(epochs, [abs(t-vloss[i]) for i,t in enumerate(tloss)], color="blue", linestyle="-.", label="Loss diff")
         
         plt.xlabel("Epochs")
         plt.ylabel("Loss")
