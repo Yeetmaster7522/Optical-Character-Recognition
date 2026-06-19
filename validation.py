@@ -1,5 +1,6 @@
 from torch import load, device, accelerator, no_grad
 from torch import max as tmax
+from torch.nn.functional import softmax
 import pandas as pd
 
 from dataloader import TrainTestLoader, CHARSET
@@ -13,70 +14,56 @@ class Validator:
         self.device = device(accelerator.current_accelerator().type if accelerator.is_available() else 'cpu')
         print(f"Using device: {self.device}")
 
-    def check_overall_acc(self):
+    def check_acc(self):
         net = self.model().to(self.device)
         net.load_state_dict(load(self.path, weights_only=True))
 
         ttl = TrainTestLoader(root_dir=self.root_dir)
         tl = ttl.trainloader
-        dataset = ttl.dataset
+        
+        subset = tl.dataset
+        og_dataset = subset.dataset
+        indices = subset.indices
 
         correct = 0
         total = 0
+
+        results = {
+            "filename": [],
+            "predicted letter": [],
+            "result": [],
+            "confidence score": []
+        }
 
         with no_grad():
             for i, (images, labels) in enumerate(tl):
                 images, labels = images.to(self.device), labels.to(self.device)
 
                 outputs = net(images)
-                _, predicted = tmax(outputs, 1)
-                # file_name = dataset.basenames[idx]
-                # print(tl.__getitem__(i))
-                # print(dataset.__getitem__(i))
-                # subset_targets = [tl.dataset.targets[i] for i in tl.indices]
-                print(images, labels)
-                break
+                probs = softmax(outputs, dim=1)
+                conf, predicted = tmax(probs, 1)  # https://stackoverflow.com/questions/69154022/how-to-get-confidence-score-from-a-trained-pytorch-model
 
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
+                for j in range(len(images)):
+                    og_idx = indices[i * tl.batch_size + j]
+                    filename = og_dataset.images[og_idx]["filename"]
 
-        print(f"Accuracy [{total}]: {100 * correct / total:.3f}%")
+                    pred = predicted[j].item()
+                    true = labels[j].item()
 
-    def check_class_acc(self):
-        net = self.model().to(self.device)
-        net.load_state_dict(load(self.path, weights_only=True))
+                    results["filename"].append(filename)
+                    results["predicted letter"].append(pred)
+                    results["result"].append(pred == true)
+                    results["confidence score"].append(f"{conf[j]:.2f}")
 
-        tl = TrainTestLoader(root_dir=self.root_dir).trainloader
+                    total += 1
+                    correct += (pred == true)
 
-        class_correct = {classname: 0 for classname in CHARSET}
-        class_total = {classname: 0 for classname in CHARSET}
+        print(f"Accuracy [{total}]: {100 * correct / total:.2f}%")
+        return results
 
-        with no_grad():
-            for images, labels in tl:
-                images, labels = images.to(self.device), labels.to(self.device)
-
-                outputs = net(images)
-                _, predicted = tmax(outputs, 1)
-
-                for label, prediction in zip(labels, predicted):
-                    if label == prediction:
-                        class_correct[CHARSET[int(label)]] += 1
-                    class_total[CHARSET[int(label)]] += 1
-
-        for classname, correct_count in class_correct.items():
-            accuracy = 100 * float(correct_count) / class_total[classname]
-            print(f"Accuracy for class: {classname} is {accuracy:.3f}%")
-
-    def to_df(self, **kwargs):
-        """
-        File name (name, not path)
-        predicted letter
-        result (Pass, Fail)
-        confidence score (2 d.p.)
-        """
-
-        df = pd.DataFrame(kwargs)
-        return df
+    def save_to_csv(self, table):
+        df = pd.DataFrame(table)
+        df.to_csv("results.csv", index=False)
 
 if __name__ == "__main__":
     from models import ocr_v2 as model
@@ -86,4 +73,6 @@ if __name__ == "__main__":
         model=model,
         root_dir="dataset/character_images_no_noise"
     )
-    validator.check_overall_acc()
+    print("starting validation")
+    results = validator.check_acc()
+    validator.save_to_csv(results)

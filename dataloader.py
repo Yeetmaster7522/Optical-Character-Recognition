@@ -36,7 +36,7 @@ class CharacterDataset(Dataset):
 
         self.images = [{
             "filename": filepath, 
-            "label": char_to_idx[chr(int(filepath.split("_")[2]))]
+            "label": char_to_idx[chr(int(filepath.removesuffix(".pt").split("_")[2]))]
             } for filepath in os.listdir(root_dir)]
 
     def __len__(self):
@@ -64,13 +64,11 @@ class TrainTestLoader:
         generator = Generator().manual_seed(seed)
 
         self.dataset = CharacterDataset(root_dir=root_dir, transform=transform)
-        trainset, testset = random_split(self.dataset, [1-split, split], generator=generator)
+        self.trainset, self.testset = random_split(self.dataset, [1-split, split], generator=generator)
 
-        self.trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
-        self.testloader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
+        self.trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True, num_workers=2)
+        self.testloader = DataLoader(self.testset, batch_size=batch_size, shuffle=False, num_workers=2)
         self.batch_size = batch_size
-
-        print(type(trainset), type(self.trainloader))
 
 def imshow(img):
     img = img / 2 + 0.5
