@@ -28,9 +28,12 @@ class Main:
             self.data_dir = str(input("Which folder contains training data? "))
 
         if self.test_dir == "":
-            self.test_dir = str(input("Which folder contains images that need to be predicted?\nLeave blank if using same folder for training data "))
-            if self.test_dir == "":
-                self.test_dir == self.data_dir
+            test_dir = str(input("Which folder contains images that need to be predicted?\nLeave blank if using same folder for training data "))
+
+            if test_dir == "":
+                self.test_dir = self.data_dir
+            elif test_dir != "":
+                self.test_dir = test_dir
 
     def list_models(self):
         for i in range(len(self.model_classes)):
@@ -89,11 +92,16 @@ class Main:
             root_dir=self.test_dir
         )
 
+        print("Starting test...")
+        results = validator.check_acc()
+        validator.save_to_csv(results, "results.csv")
+        print("Results saved in results.csv")
+
 
 
 if __name__ == "__main__":
     main = Main(
-        model_dir="models/models_F", 
-        data_dir="dataset/character_images_no_noise"
+        # model_dir="models/models_F", 
+        # data_dir="dataset/character_images_no_noise"
     )
     main.loop()

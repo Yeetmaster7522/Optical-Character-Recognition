@@ -61,9 +61,9 @@ class Validator:
         print(f"Accuracy [{total}]: {100 * correct / total:.2f}%")
         return results
 
-    def save_to_csv(self, table):
+    def save_to_csv(self, table, filepath):
         df = pd.DataFrame(table)
-        df.to_csv("results.csv", index=False)
+        df.to_csv(filepath, index=False)
 
 if __name__ == "__main__":
     from models import ocr_v2 as model
@@ -75,4 +75,4 @@ if __name__ == "__main__":
     )
     print("starting validation")
     results = validator.check_acc()
-    validator.save_to_csv(results)
+    validator.save_to_csv(results, "results.csv")
