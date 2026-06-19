@@ -33,3 +33,7 @@ Requires PyTorch, Torchvision, Matplotlib, Numpy, and Pillow.
 > - model_2_T_69: *98%*
 > - model_3_T_36: *98%*
 > - model_4_T_39: *97%*
+
+---
+# Note to self
+Need to hyperoptimise training to make it as fast as possible. Need to make "UI" nice and easy for people to read. Add progress bars. Employ multithreading in order to do multiple things at once. Force limit on how many models are saved per training run. Need more graphics during training to see where the models are struggling such as on characters, fonts, confidence. Add entire google font library for fun. Do wingdings for maximum pain and suffering >:).
