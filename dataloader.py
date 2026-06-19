@@ -36,7 +36,7 @@ class CharacterDataset(Dataset):
 
         self.images = [{
             "filename": filepath, 
-            "label": char_to_idx[chr(int(filepath.removesuffix(".pt").split("_")[2]))]
+            "label": char_to_idx[chr(int(filepath.removesuffix(".png").split("_")[2]))]
             } for filepath in os.listdir(root_dir)]
 
     def __len__(self):

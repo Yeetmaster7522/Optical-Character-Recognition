@@ -87,7 +87,7 @@ class Main:
         saved_idx = int(input("Select saved model from above: "))
 
         validator = Validator(
-            path=f"models/models_F/{files[saved_idx]}",
+            path=f"{self.model_dir}/{files[saved_idx]}",
             model=model,
             root_dir=self.test_dir
         )
@@ -101,7 +101,8 @@ class Main:
 
 if __name__ == "__main__":
     main = Main(
-        # model_dir="models/models_F", 
-        # data_dir="dataset/character_images_no_noise"
+        model_dir="models/models_T", 
+        data_dir="dataset/character_images_no_noise",
+        test_dir="dataset/new_test"
     )
     main.loop()
