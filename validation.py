@@ -3,7 +3,7 @@ from torch import max as tmax
 from torch.nn.functional import softmax
 import pandas as pd
 
-from dataloader import TrainTestLoader
+from dataloader import TrainTestLoader, CHARSET
 
 class Validator:
     def __init__(self, path, model, root_dir):
@@ -53,7 +53,7 @@ class Validator:
                     true = labels[j].item()
 
                     results["filename"].append(filename)
-                    results["predicted letter"].append(pred)
+                    results["predicted letter"].append(CHARSET[pred])
                     results["result"].append("Pass" if pred == true else "Fail")
                     results["confidence score"].append(f"{conf[j]:.2f}")
 

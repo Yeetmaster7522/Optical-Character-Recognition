@@ -117,14 +117,28 @@ class Main:
     def show_test_results(self, results):
         filenames = results["filename"]
         y_test = [char_to_idx[chr(int(filename.removesuffix(".png").split("_")[2]))] for filename in filenames]
+        y_pred = [char_to_idx[l] for l in results["predicted letter"]]
 
         ConfusionMatrixDisplay.from_predictions(
             y_test, 
-            results["predicted letter"],
+            y_pred,
             include_values=False,
             display_labels=CHARSET,
             cmap="Blues"
         )
+        plt.show()
+
+        confidence_sum = [0 for _ in CHARSET]
+        char_count = [0 for _ in CHARSET]
+
+        confidence = results["confidence score"]
+        for i, c in enumerate(results["predicted letter"]):
+            char_idx = CHARSET.index(c)
+            confidence_sum[char_idx] += float(confidence[i])
+            char_count[char_idx] += 1
+
+        plt.bar(CHARSET, [s/char_count[i] for i,s in enumerate(confidence_sum)])
+        # plt.bar(results["predicted letter"], results[""])
         plt.show()
 
 
