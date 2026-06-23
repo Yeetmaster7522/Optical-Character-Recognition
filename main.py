@@ -116,14 +116,15 @@ class Main:
 
     def show_test_results(self, results):
         filenames = results["filename"]
-        y_true = [char_to_idx[chr(int(filename.removesuffix(".png").split("_")[2]))] for filename in filenames]
+        y_test = [char_to_idx[chr(int(filename.removesuffix(".png").split("_")[2]))] for filename in filenames]
 
-        cm = confusion_matrix(
-            y_true=y_true,
-            y_pred=results["predicted letter"],
-            normalize="true"
-            )
-        ConfusionMatrixDisplay(cm, display_labels=CHARSET).plot()
+        ConfusionMatrixDisplay.from_predictions(
+            y_test, 
+            results["predicted letter"],
+            include_values=False,
+            display_labels=CHARSET,
+            cmap="Blues"
+        )
         plt.show()
 
 
