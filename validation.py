@@ -54,7 +54,7 @@ class Validator:
 
                     results["filename"].append(filename)
                     results["predicted letter"].append(pred)
-                    results["result"].append(pred == true)
+                    results["result"].append("Pass" if pred == true else "Fail")
                     results["confidence score"].append(f"{conf[j]:.2f}")
 
                     total += 1

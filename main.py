@@ -1,9 +1,12 @@
 import os
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay #https://stackoverflow.com/questions/74020233/how-to-plot-confusion-matrix-in-pytorch
 
 import models
 from training import Trainer
 from validation import Validator
+from dataloader import TrainTestLoader as TTL
+from dataloader import CHARSET, char_to_idx
 
 class Main:
     def __init__(self, model_dir="", data_dir="", test_dir=""):
@@ -109,12 +112,26 @@ class Main:
         validator.save_to_csv(results, "results.csv")
         print("Results saved in results.csv")
 
+        self.show_test_results(results)
+
+    def show_test_results(self, results):
+        filenames = results["filename"]
+        y_true = [char_to_idx[chr(int(filename.removesuffix(".png").split("_")[2]))] for filename in filenames]
+
+        cm = confusion_matrix(
+            y_true=y_true,
+            y_pred=results["predicted letter"],
+            normalize="true"
+            )
+        ConfusionMatrixDisplay(cm, display_labels=CHARSET).plot()
+        plt.show()
+
 
 
 if __name__ == "__main__":
     main = Main(
         model_dir="new_models/models_T", 
         data_dir="dataset/character_images_with_noise",
-        test_dir="dataset/new_test"
+        test_dir="dataset/character_images_with_noise"
     )
     main.loop()
