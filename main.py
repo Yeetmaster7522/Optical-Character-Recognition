@@ -150,8 +150,22 @@ class Main:
             else:
                 wrong[c] += 1
 
-        plt.bar(CHARSET, [s/char_count[i] for i,s in enumerate(confidence_sum)])
-        plt.bar(CHARSET, [c/wrong[i] for i,c in enumerate(correct)])
+        char_means = {
+            "confidence_avg": [s/char_count[i] for i,s in enumerate(confidence_sum)],
+            "correct_pct": [c/wrong[i] for i,c in enumerate(correct)]
+        }
+
+        # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
+        fig, ax = plt.subplots(layout="constrained")
+
+        res = ax.grouped_bar(char_means, tick_labels=CHARSET, group_spacing=1)
+        for container in res.bar_containers:
+            ax.bar_label(container, padding=3)
+
+        ax.set_ylabel("%")
+        ax.set_title("Confidence and Accuracy by Character")
+        ax.legend(loc="upper left", ncols=2)
+        ax.set_ylim(0,100)
         plt.show()
 
 
