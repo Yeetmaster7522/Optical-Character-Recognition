@@ -128,32 +128,25 @@ class Main:
         )
         plt.show()
 
-        charset_init_count = [0 for _ in CHARSET]
+        confidence_sum = [0 for _ in CHARSET]
+        correct = [0 for _ in CHARSET]
+        totals = [0 for _ in CHARSET]
 
-        confidence_sum = charset_init_count
-        char_count = charset_init_count
-
-        confidence = results["confidence score"]
-        for i, c in enumerate(results["predicted letter"]):
+        for i, c in enumerate(results["actual letter"]):
             char_idx = CHARSET.index(c)
-            confidence_sum[char_idx] += float(confidence[i])
-            char_count[char_idx] += 1
 
-        correct = charset_init_count
-        wrong = charset_init_count
+            confidence_sum[char_idx] += float(results["confidence score"][i])
+            if results["result"][i] == "Pass":
+                correct[char_idx] += 1
 
-        result_list = results["result"]
-        for i, f in enumerate(results["filename"]):
-            c = char_to_idx[chr(int(f.removesuffix(".png").split("_")[2]))]
-            if result_list[c] == "Pass":
-                correct[c] += 1
-            else:
-                wrong[c] += 1
+            totals[char_idx] += 1
 
         char_means = {
-            "confidence_avg": [s/char_count[i] for i,s in enumerate(confidence_sum)],
-            "correct_pct": [c/wrong[i] for i,c in enumerate(correct)]
+            "confidence_avg": [round(conf/totals[i], 2) for i,conf in enumerate(confidence_sum)],
+            "correct_pct": [round(count/totals[i], 2) for i,count in enumerate(correct)]
         }
+
+        # print(char_means, correct, wrong)
 
         # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
         fig, ax = plt.subplots(layout="constrained")
@@ -165,7 +158,7 @@ class Main:
         ax.set_ylabel("%")
         ax.set_title("Confidence and Accuracy by Character")
         ax.legend(loc="upper left", ncols=2)
-        ax.set_ylim(0,100)
+        # ax.set_ylim(0,100)
         plt.show()
 
 

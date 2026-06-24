@@ -30,6 +30,7 @@ class Validator:
 
         results = {
             "filename": [],
+            "actual letter": [],
             "predicted letter": [],
             "result": [],
             "confidence score": []
@@ -53,6 +54,7 @@ class Validator:
                     true = labels[j].item()
 
                     results["filename"].append(filename)
+                    results["actual letter"].append(CHARSET[true])
                     results["predicted letter"].append(CHARSET[pred])
                     results["result"].append("Pass" if pred == true else "Fail")
                     results["confidence score"].append(f"{conf[j]:.2f}")
