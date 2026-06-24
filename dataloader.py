@@ -9,6 +9,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+"""
+CHARSET and char_to_idx written by Copilot.
+
+CHARSET is a tuple of strings of characters
+
+char_to_idx is a dictionary using characters as keys and its translation to the output layer of
+the neural networks.
+"""
 CHARSET = (
     [chr(i) for i in range(65, 91)] +      # A–Z
     [chr(i) for i in range(97, 123)] +     # a–z
@@ -19,37 +27,60 @@ char_to_idx = {c: i for i, c in enumerate(CHARSET)}
 
 class CharacterDataset(Dataset):
     """
-    Character img dataset
+    Character img dataset.
     https://docs.pytorch.org/tutorials/beginner/data_loading_tutorial.html
+
+    Attributes:
+        root_dir: a filepath to a folder with images
+        images: filename and label of each image in root_dir
+        transform: the transform applied to an image
     """
     
     def __init__(self, root_dir: str, transform=None):
         """
-        root_dir: directory with all the images
-        transform: applied on a sample
+        Initialises dataset.
+        
+        Keyword arguments:
+            root_dir: a filepath to a folder with images
+            transform: the transform applied to an image
         """
+
+        # If root_dir does not exist it will raise an exception to the developer (not user).
         if not os.path.exists(root_dir):
             raise Exception(f"Root directory: {root_dir} does not exist")
 
+        # Set class attributes
         self.root_dir = root_dir
         self.transform = transform
 
+        # Loops through each filepath in the root_dir and saves the filename and label.
         self.images = [{
             "filename": filepath, 
             "label": char_to_idx[chr(int(filepath.removesuffix(".png").split("_")[2]))]
             } for filepath in os.listdir(root_dir)]
 
     def __len__(self):
+        """Returns amount of items in self.images"""
         return len(self.images)
     
     def __getitem__(self, idx):
+        """
+        Returns grayscale image and label in format:
+            (image, label)
+        """
+        
+        # If idx is tensor it will turn it into a list
         if is_tensor(idx):
             idx = idx.tolist()
 
+        # Joins together root directory and filename to get filepath
         filepath = os.path.join(self.root_dir, self.images[idx]["filename"])
-        with Image.open(filepath) as image:
-            image = image.convert("L") # grayscale
 
+        # Opens filepath as an image
+        with Image.open(filepath) as image:
+            image = image.convert("L") # Makes image grayscale
+
+            # Applies transform to image if applicable
             if self.transform:
                 image = self.transform(image)
 
