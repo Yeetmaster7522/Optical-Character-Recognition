@@ -128,8 +128,10 @@ class Main:
         )
         plt.show()
 
-        confidence_sum = [0 for _ in CHARSET]
-        char_count = [0 for _ in CHARSET]
+        charset_init_count = [0 for _ in CHARSET]
+
+        confidence_sum = charset_init_count
+        char_count = charset_init_count
 
         confidence = results["confidence score"]
         for i, c in enumerate(results["predicted letter"]):
@@ -137,16 +139,27 @@ class Main:
             confidence_sum[char_idx] += float(confidence[i])
             char_count[char_idx] += 1
 
+        correct = charset_init_count
+        wrong = charset_init_count
+
+        result_list = results["result"]
+        for i, f in enumerate(results["filename"]):
+            c = char_to_idx[chr(int(f.removesuffix(".png").split("_")[2]))]
+            if result_list[c] == "Pass":
+                correct[c] += 1
+            else:
+                wrong[c] += 1
+
         plt.bar(CHARSET, [s/char_count[i] for i,s in enumerate(confidence_sum)])
-        # plt.bar(results["predicted letter"], results[""])
+        plt.bar(CHARSET, [c/wrong[i] for i,c in enumerate(correct)])
         plt.show()
 
 
 
 if __name__ == "__main__":
     main = Main(
-        model_dir="new_models/models_T", 
-        data_dir="dataset/character_images_with_noise",
-        test_dir="dataset/character_images_with_noise"
+        model_dir="models/models_F", 
+        data_dir="dataset/character_images_no_noise",
+        test_dir="dataset/character_images_no_noise"
     )
     main.loop()
