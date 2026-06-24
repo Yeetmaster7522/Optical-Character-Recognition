@@ -87,23 +87,60 @@ class CharacterDataset(Dataset):
         return image, self.images[idx]["label"]
     
 class TrainTestLoader:
+    """
+    Utility class for CharacterDataset to provide efficent data loading.
+
+    Attributes:
+        dataset: CharacterDataset object
+        trainset: training dataset
+        testset: testing dataset
+        trainloader: Dataloader for trainset
+        testloader: Dataloader for testloader
+        batch_size
+    """
     def __init__(self, root_dir, seed=42, split=0.2, batch_size=128):
+        """
+        Initialise TrainTestLoader.
+
+        Keyword arguments:
+            root_dir: filepath where dataset is stored
+        
+        Optional keyword arguments:
+            seed: starting point for RNG
+            split: fraction representing how much of the dataset is split into the trainset
+            batch_size: number of data samples processed in a single iteration
+        """
+        
+        # Transform for images. Converst PIL image, numpy array, or tensor into Image tensor 
+        # and normalises pixel values to be from 0 to 1.
         transform = v2.Compose([
             v2.ToImage(),
             v2.ToDtype(float32, scale=True)
         ])
+
+        # Create Generator object to manage RNG
         generator = Generator().manual_seed(seed)
 
+        # Create dataset and split it into train and test sets
         self.dataset = CharacterDataset(root_dir=root_dir, transform=transform)
         self.trainset, self.testset = random_split(self.dataset, [1-split, split], generator=generator)
 
+        # Create dataloaders
         self.trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True, num_workers=2)
         self.testloader = DataLoader(self.testset, batch_size=batch_size, shuffle=False, num_workers=2)
+        
+        # Batch size reference for other programs
         self.batch_size = batch_size
 
 def imshow(img):
-    img = img / 2 + 0.5
-    npimg = img.numpy()
+    """
+    Takes a PyTorch image tensor, and displays it using matplotlib.
+    """
+    
+    img = img / 2 + 0.5 # Undo normalisation
+    npimg = img.numpy() # Convert PyTorch tensor to numpy array
+    
+    # Displays image
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
 
