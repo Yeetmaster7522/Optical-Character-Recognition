@@ -115,38 +115,44 @@ class Main:
         self.show_test_results(results)
 
     def show_test_results(self, results):
-        filenames = results["filename"]
-        y_test = [char_to_idx[chr(int(filename.removesuffix(".png").split("_")[2]))] for filename in filenames]
-        y_pred = [char_to_idx[l] for l in results["predicted letter"]]
-
-        ConfusionMatrixDisplay.from_predictions(
-            y_test, 
-            y_pred,
-            include_values=False,
-            display_labels=CHARSET,
-            cmap="Blues"
-        )
-        plt.show()
-
+        y_test = []
+        y_pred = []
         confidence_sum = [0 for _ in CHARSET]
         correct = [0 for _ in CHARSET]
         totals = [0 for _ in CHARSET]
 
-        for i, c in enumerate(results["actual letter"]):
-            char_idx = CHARSET.index(c)
+        for i in range(len(results["filename"])):
+            # filename = results["filename"][i]
+            pred = results["predicted letter"][i]
+            actual = results["actual letter"][i]
+            result = results["result"][i]
+            conf = float(results["confidence score"][i])
+            j = CHARSET.index(actual)
 
-            confidence_sum[char_idx] += float(results["confidence score"][i])
-            if results["result"][i] == "Pass":
-                correct[char_idx] += 1
+            y_test.append(char_to_idx[actual])
+            y_pred.append(char_to_idx[pred])
 
-            totals[char_idx] += 1
+            confidence_sum[j] += float(conf)
+
+            if result == "Pass":
+                correct[j] += 1
+
+            totals[j] += 1
 
         char_means = {
             "confidence_avg": [round(conf/totals[i], 2) for i,conf in enumerate(confidence_sum)],
             "correct_pct": [round(count/totals[i], 2) for i,count in enumerate(correct)]
         }
 
-        # print(char_means, correct, wrong)
+        ConfusionMatrixDisplay.from_predictions(
+            y_test, 
+            y_pred,
+            include_values=False,
+            display_labels=CHARSET,
+            normalize="true",
+            cmap="Blues"
+        )
+        plt.show()
 
         # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
         fig, ax = plt.subplots(layout="constrained")
