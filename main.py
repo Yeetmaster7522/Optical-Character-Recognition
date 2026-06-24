@@ -22,53 +22,80 @@ class Main:
         self.data_dir = data_dir
         self.test_dir = test_dir
 
-        self.get_directories()
-
-    def get_directories(self):
-        if self.model_dir == "":
-            self.model_dir = str(input("Which folder do I read and write models from and to? "))
-        
-        if self.data_dir == "":
-            self.data_dir = str(input("Which folder contains training data? "))
-
-        if self.test_dir == "":
-            test_dir = str(input("Which folder contains images that need to be predicted?\nLeave blank if using same folder for training data "))
-
-            if test_dir == "":
-                self.test_dir = self.data_dir
-            elif test_dir != "":
-                self.test_dir = test_dir
-
     def list_models(self):
         for i in range(len(self.model_classes)):
             print(f"[{i}]: {self.model_classes[i].__name__}")
 
     def loop(self):
         while True:
-            user_inp = str(input("\nWhat would you like to do?\n(T for train, P for predict, E for exit)\n")).lower()
+            user_inp = self.get_inp(
+                display="\nWhat would you like to do?\n(T for train, P for predict, E for exit)\n",
+                expected=["t", "p", "e"]
+                )
 
             if user_inp == "e":
                 break
 
             self.select_train_pred(user_inp)
 
+    def get_inp(self, display: str, expected=[]):
+        while True:
+            user_inp = input(display).strip()
+
+            try:
+                user_inp = int(user_inp)
+            except ValueError:
+                user_inp = user_inp.lower()
+
+            if expected == [] or user_inp in expected:
+                return user_inp
+            else:
+                print("Invalid input")
+
     def select_train_pred(self, choice):
+        if self.model_dir == "":
+            self.model_dir = self.get_inp("Which folder do I read and write models from and to? ")
+
         if choice == "t":
-            print("Training mode chosen")
-            self.train()
+            print("\nTraining mode chosen")
+
+            if self.data_dir == "":
+                self.data_dir = self.get_inp("Which folder contains training data? ")
+
+            self.list_models()
+            model_idx = self.get_inp(
+                display="Select model type from above: ",
+                expected=[i for i in range(len(self.model_classes))]
+                )
+            model = self.model_classes[model_idx]
+            print(f"Model will be saved as: {model.__name__}\nIn folder: {self.model_dir}")
+
+            self.train(model)
         elif choice == "p":
-            print("Prediction mode chosen")
-            self.test()
-        else:
-            print("Invalid input")
+            print("\nPrediction mode chosen")
 
-    def train(self):
-        self.list_models()
-        model_idx = int(input("Select model type from above: "))
-        model = self.model_classes[model_idx]
+            if self.test_dir == "":
+                self.test_dir = self.get_inp("Which folder contains images that needs to be predicted? ")
 
-        print(f"Model will be saved as: {model.__name__}\nIn folder: {self.model_dir}")
+            self.list_models()
+            model_idx = self.get_inp(
+                display="Select model type from above: ",
+                expected=[i for i in range(len(self.model_classes))]
+                )
+            model = self.model_classes[model_idx]
+            
+            files = [f for f in os.listdir(self.model_dir) if model.__name__ in f]
+            for i in range(len(files)):
+                print(f"[{i}]: {files[i]}")
 
+            saved_idx = self.get_inp(
+                display="Select saved model from above: ",
+                expected=[i for i in range(len(files))]
+            )
+
+            self.test(model, files[saved_idx])
+
+    def train(self, model):
         trainer = Trainer(
             name=model.__name__,
             model=model,
@@ -90,19 +117,9 @@ class Main:
         plt.legend()
         plt.show()
         
-    def test(self):
-        self.list_models()
-        model_idx = int(input("Select model type from above: "))
-        model = self.model_classes[model_idx]
-        
-        files = [f for f in os.listdir(self.model_dir) if model.__name__ in f]
-        for i in range(len(files)):
-            print(f"[{i}]: {files[i]}")
-
-        saved_idx = int(input("Select saved model from above: "))
-
+    def test(self, model, filename):
         validator = Validator(
-            path=f"{self.model_dir}/{files[saved_idx]}",
+            path=f"{self.model_dir}/{filename}",
             model=model,
             root_dir=self.test_dir
         )
