@@ -14,7 +14,7 @@ class Validator:
         self.device = device(accelerator.current_accelerator().type if accelerator.is_available() else 'cpu')
         print(f"Using device: {self.device}")
 
-    def check_acc(self):
+    def check_acc(self) -> dict:
         net = self.model().to(self.device)
         net.load_state_dict(load(self.path, weights_only=True))
 
