@@ -13,13 +13,19 @@ import torch.nn.functional as F
 
 class ocr_v1(nn.Module):
     """
-    conv
-    pool
-    conv
-    pool
-    fcl
-    fcl
-    fcl
+    A child class of nn.Module.
+
+    Model architecture:
+        - conv(1,6,5)
+        - relu
+        - pool(2,2)
+        - conv(6,16,5)
+        - relu
+        - pool(2,2)
+        - flatten
+        - fcl(256, 120)
+        - fc2(120, 84)
+        - fc3(84, 71)
     """
     
     def __init__(self):
@@ -43,13 +49,19 @@ class ocr_v1(nn.Module):
 
 class ocr_v2(nn.Module):
     """
-    conv
-    pool
-    conv
-    pool
-    fcl
-    fcl
-    fcl
+    A child class of nn.Module.
+
+    Model architecture:
+        - conv(1,16,3)
+        - relu
+        - pool(2,2)
+        - conv(16,32,3)
+        - relu
+        - pool(2,2)
+        - flatten
+        - fcl(800, 240)
+        - fc2(240, 168)
+        - fc3(168, 71)
     """
 
     def __init__(self):
@@ -73,13 +85,19 @@ class ocr_v2(nn.Module):
     
 class ocr_v3(nn.Module):
     """
-    conv
-    pool
-    conv
-    pool
-    fcl
-    fcl
-    fcl
+    A child class of nn.Module.
+
+    Model architecture:
+        - conv(1,32,3)
+        - relu
+        - pool(2,2)
+        - conv(32,64,3)
+        - relu
+        - pool(2,2)
+        - flatten
+        - fcl(1600, 240)
+        - fc2(240, 168)
+        - fc3(168, 71)
     """
 
     def __init__(self):
@@ -103,7 +121,24 @@ class ocr_v3(nn.Module):
     
 class ocr_v4(nn.Module):
     """
-    inspired by https://arxiv.org/pdf/1512.03385v1 VGG-19 model architecture
+    A child class of nn.Module. Inspired by https://arxiv.org/pdf/1512.03385v1 
+    VGG-19 model architecture.
+
+    Model architecture:
+        - conv(1,16,3, padding=1)
+        - relu
+        - pool(2,2)
+        - conv(16,32,3, padding=1)
+        - relu
+        - pool(2,2)
+        - flatten
+        - fcl(1568, 256)
+        - relu
+        - dropout(0.1)
+        - fc2(256, 128)
+        - relu
+        - dropout(0.1)
+        - fc3(128, 71)
     """
     
     def __init__(self):
