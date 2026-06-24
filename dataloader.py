@@ -1,7 +1,9 @@
 from torch import is_tensor, float32, Generator
+from torch.utils.data import Dataset, random_split, DataLoader
+
 from torchvision.utils import make_grid
 from torchvision.transforms import v2
-from torch.utils.data import Dataset, random_split, DataLoader
+from torchvision import tv_tensors
 
 from PIL import Image
 
@@ -98,7 +100,7 @@ class TrainTestLoader:
         testloader: Dataloader for testloader
         batch_size
     """
-    def __init__(self, root_dir, seed=42, split=0.2, batch_size=128):
+    def __init__(self, root_dir: str, seed=42, split=0.2, batch_size=128):
         """
         Initialise TrainTestLoader.
 
@@ -132,9 +134,9 @@ class TrainTestLoader:
         # Batch size reference for other programs
         self.batch_size = batch_size
 
-def imshow(img):
+def imshow(img: tv_tensors.Image):
     """
-    Takes a PyTorch image tensor, and displays it using matplotlib.
+    Takes a PyTorch image tensor and displays it using matplotlib.
     """
     
     img = img / 2 + 0.5 # Undo normalisation
