@@ -100,7 +100,7 @@ class TrainTestLoader:
         testloader: Dataloader for testloader
         batch_size: Number of data samples processed in a single iteration
     """
-    def __init__(self, root_dir: str, seed=42, split=0.2, batch_size=128):
+    def __init__(self, root_dir: str, seed=42, split=0.2, batch_size=256):
         """
         Initialise TrainTestLoader.
 
@@ -128,8 +128,8 @@ class TrainTestLoader:
         self.trainset, self.testset = random_split(self.dataset, [1-split, split], generator=generator)
 
         # Create dataloaders
-        self.trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True, num_workers=2)
-        self.testloader = DataLoader(self.testset, batch_size=batch_size, shuffle=False, num_workers=2)
+        self.trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+        self.testloader = DataLoader(self.testset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
         
         # Batch size reference for other programs
         self.batch_size = batch_size
