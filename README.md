@@ -37,6 +37,7 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, and Pillow.
 
 ---
 # Note to self
-Need to hyperoptimise training to make it as fast as possible. Add entire google font library for fun. Do wingdings for maximum pain and suffering >:). Add accuracy and confidence per font.
-
-[Optimisation](https://www.reddit.com/r/MachineLearning/comments/kvs1ex/d_here_are_17_ways_of_making_pytorch_training/)
+Implement progressbar fully
+Add accuracy and confidence per font
+Train wingdings
+Add entire google font library for fun.
