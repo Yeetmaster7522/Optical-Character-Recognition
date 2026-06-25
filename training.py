@@ -11,16 +11,16 @@ class Trainer:
     Automates machine learning training process.
 
     Attributes:
-        name: what the model weights will be saved as on hard drive
-        model: what model architecture will be trained
-        save_folder: filepath where model weights will be saved
-        root_dir: filepath to access training data
-        max_epochs: epoch at which training will always stop at (if early stopping not achieved)
-        lr: learning rate used for training
-        tloss_checkpoint: checkpoint for training loss at which model weights will start being
+        name: What the model weights will be saved as on hard drive
+        model: What model architecture will be trained
+        save_folder: Filepath where model weights will be saved
+        root_dir: Filepath to access training data
+        max_epochs: Epoch at which training will always stop at (if early stopping not achieved)
+        lr: Learning rate used for training
+        tloss_checkpoint: Checkpoint for training loss at which model weights will start being
         saved
-        max_patience: how long to wait for model training loss to drop before stopping training
-        device: which device will be used for calculations during training
+        max_patience: How long to wait for model training loss to drop before stopping training
+        device: Which device will be used for calculations during training
     """
     
     def __init__(
@@ -38,15 +38,15 @@ class Trainer:
         Initialises Trainer.
 
         Keyword arguments:
-            name: what the model weights will be saved as on hard drive
-            model: what model architecture will be trained
-            save_folder: filepath where model weights will be saved
-            root_dir: filepath to access training data
-            max_epochs: epoch at which training will always stop at (if early stopping not achieved)
-            lr: learning rate used for training
-            tloss_checkpoint: checkpoint for training loss at which model weights will start being
+            name: What the model weights will be saved as on hard drive
+            model: What model architecture will be trained
+            save_folder: Filepath where model weights will be saved
+            root_dir: Filepath to access training data
+            max_epochs: Epoch at which training will always stop at (if early stopping not achieved)
+            lr: Learning rate used for training
+            tloss_checkpoint: Checkpoint for training loss at which model weights will start being
             saved
-            max_patience: how long to wait for model training loss to drop before stopping training
+            max_patience: How long to wait for model training loss to drop before stopping training
         """
 
         # Setting class attributes
@@ -68,8 +68,8 @@ class Trainer:
         Saves model
 
         Keyword arguments:
-            state_dict: models current state. Obtainable via .state_dict().
-            filepath: where model will be saved.
+            state_dict: Models current state. Obtainable via .state_dict().
+            filepath: Where model will be saved.
         """
         
         save(state_dict, filepath)

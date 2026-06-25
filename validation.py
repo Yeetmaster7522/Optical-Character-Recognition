@@ -11,10 +11,10 @@ class Validator:
     Automates prediction/validation of machine learning models
 
     Attributes:
-        path: filepath where model is saved
-        model: which model architecture to use
-        root_dir: filepath where test images are
-        device: which device will be used for calculations during prediction
+        path: Filepath where model is saved
+        model: Which model architecture to use
+        root_dir: Filepath where test images are
+        device: Which device will be used for calculations during prediction
     """
     
     def __init__(self, path: str, model: Module, root_dir: str):
@@ -22,9 +22,9 @@ class Validator:
         Initialises Validator.
 
         Keyword arguments:
-            path: filepath where model is saved
-            model: which model architecture to use
-            root_dir: filepath where test images are
+            path: Filepath where model is saved
+            model: Which model architecture to use
+            root_dir: Filepath where test images are
         """
         
         # Set class attributes

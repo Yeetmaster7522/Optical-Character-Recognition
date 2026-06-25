@@ -33,9 +33,9 @@ class CharacterDataset(Dataset):
     https://docs.pytorch.org/tutorials/beginner/data_loading_tutorial.html
 
     Attributes:
-        root_dir: a filepath to a folder with images
-        images: filename and label of each image in root_dir
-        transform: the transform applied to an image
+        root_dir: A filepath to a folder with images
+        images: Filename and label of each image in root_dir
+        transform: The transform applied to an image
     """
     
     def __init__(self, root_dir: str, transform=None):
@@ -43,8 +43,8 @@ class CharacterDataset(Dataset):
         Initialises dataset.
         
         Keyword arguments:
-            root_dir: a filepath to a folder with images
-            transform: the transform applied to an image
+            root_dir: A filepath to a folder with images
+            transform: The transform applied to an image
         """
 
         # If root_dir does not exist it will raise an exception to the developer (not user).
@@ -94,23 +94,23 @@ class TrainTestLoader:
 
     Attributes:
         dataset: CharacterDataset object
-        trainset: training dataset
-        testset: testing dataset
+        trainset: Training dataset
+        testset: Testing dataset
         trainloader: Dataloader for trainset
         testloader: Dataloader for testloader
-        batch_size
+        batch_size: Number of data samples processed in a single iteration
     """
     def __init__(self, root_dir: str, seed=42, split=0.2, batch_size=128):
         """
         Initialise TrainTestLoader.
 
         Keyword arguments:
-            root_dir: filepath where dataset is stored
+            root_dir: Filepath where dataset is stored
         
         Optional keyword arguments:
-            seed: starting point for RNG
-            split: fraction representing how much of the dataset is split into the trainset
-            batch_size: number of data samples processed in a single iteration
+            seed: Starting point for RNG
+            split: Fraction representing how much of the dataset is split into the trainset
+            batch_size: Number of data samples processed in a single iteration
         """
         
         # Transform for images. Converst PIL image, numpy array, or tensor into Image tensor 

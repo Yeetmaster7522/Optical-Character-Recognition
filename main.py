@@ -13,10 +13,10 @@ class Main:
     Streamlines the entire ML pipeline for a user including training and testing.
 
     Attributes:
-        model_classes: array of nn.Modules
-        model_dir: filepath where models are saved
-        train_dir filepath where training images are saved
-        test_dir: filepath where test images are saved
+        model_classes: Array of nn.Modules
+        model_dir: Filepath where models are saved
+        train_dir Filepath where training images are saved
+        test_dir: Filepath where test images are saved
     """
     
     def __init__(self, model_dir="", train_dir="", test_dir=""):
@@ -24,9 +24,9 @@ class Main:
         Initialise Main.
         
         Keyword arguments:
-            model_dir: filepath where models are saved
-            train_dir: filepath where training images are saved
-            test_dir: filepath where test images are saved
+            model_dir: Filepath where models are saved
+            train_dir: Filepath where training images are saved
+            test_dir: Filepath where test images are saved
         """
         
         print("WELCOME")
@@ -45,7 +45,7 @@ class Main:
         """
         Lists every nn.Module class within self.model_classes in the terminal
         in the format:
-            [i]: name of class
+            [i]: Name of class
         """
         
         for i in range(len(self.model_classes)):
@@ -77,8 +77,8 @@ class Main:
         Cleanses and validates user input.
 
         Keyword arguments:
-            display: what will be printed to the console
-            expected (optional): user input must be one of the values listed here
+            display: What will be printed to the console
+            expected (optional): User input must be one of the values listed here
         """
         
         while True:
@@ -162,7 +162,7 @@ class Main:
         Trains model and outputs final accuracy and training/testing loss over epochs
 
         Keyword argument:
-            model: model architecture that will be trained
+            model: Model architecture that will be trained
         """
 
         # Create instance of Trainer class
@@ -203,8 +203,8 @@ class Main:
         Puts model into prediction mode and outputs accuracy over test dataset.
 
         Keyword arguments:
-            model: model architecture that will be used for prediction
-            filename: filename of the model weights that will be loaded into model architecture
+            model: Model architecture that will be used for prediction
+            filename: Filename of the model weights that will be loaded into model architecture
         """
         
         # Create instance of Validator class
@@ -232,7 +232,7 @@ class Main:
         accuracy per character.
 
         Keyword arguments:
-            results: results from running model through test images. 
+            results: Results from running model through test images. 
             Is in format:
                 {
                     "filename": [],
