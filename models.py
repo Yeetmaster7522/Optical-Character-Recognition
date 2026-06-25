@@ -203,7 +203,7 @@ class ocr_v4(nn.Module):
 
         return x
 
-class ocr_v4(nn.Module):
+class ocr_v5(nn.Module):
     """
     A child class of nn.Module. Upgrade of ocr_v4
 

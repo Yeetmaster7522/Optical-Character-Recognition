@@ -36,6 +36,7 @@ class Main:
             models.ocr_v2,
             models.ocr_v3,
             models.ocr_v4,
+            models.ocr_v5
         ]
         self.model_dir = model_dir
         self.train_dir = train_dir
