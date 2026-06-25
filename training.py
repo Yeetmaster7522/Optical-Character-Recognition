@@ -1,5 +1,5 @@
 import torch.optim as optim
-from torch import nn, save, accelerator, no_grad, amp, autocast, backends, autograd, bfloat16, compile, set_float32_matmul_precision
+from torch import nn, save, accelerator, device, no_grad, amp, autocast, backends, autograd, float16, compile, set_float32_matmul_precision
 
 import matplotlib.pyplot as plt
 
@@ -80,6 +80,8 @@ class Trainer:
         Training loop.
         """
 
+        d = device(self.device)
+
         # Enable NVIDIA cuDNN auto tuner
         backends.cudnn.benchmark = True
 
@@ -90,7 +92,7 @@ class Trainer:
         set_float32_matmul_precision("high")
         
         # Creates and compiles model object
-        net = self.model()
+        net = self.model().to(d)
         
         # Leverage Triton or template based matrix multiplications with CUDA graphs
         net = compile(net, mode="max-autotune")
@@ -122,11 +124,13 @@ class Trainer:
 
             # Iterates through inputs and labels in trainloader
             for i, (inputs, labels) in enumerate(trainloader, 0):
+                inputs, labels = inputs.to(d), labels.to(d)
+
                 # Clears accumulated gradients
                 optimizer.zero_grad(set_to_none=True)
 
                 # Runs forward pass with autocasting
-                with autocast(device_type=self.device, dtype=bfloat16):
+                with autocast(device_type=self.device, dtype=float16):
                     outputs = net(inputs)
                     loss = criterion(outputs, labels)
 
@@ -154,7 +158,8 @@ class Trainer:
             with no_grad():
                 # Iterates through inputs and labels in testloader
                 for vinputs, vlabels in testloader:
-                    with autocast(device_type=self.device, dtype=bfloat16):
+                    vinputs, vlabels = vinputs.to(d), vlabels.to(d)
+                    with autocast(device_type=self.device, dtype=float16):
                         # Get outputs and calculate validation loss
                         voutputs = net(vinputs)
                         vloss = criterion(voutputs, vlabels)
