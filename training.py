@@ -95,11 +95,11 @@ class Trainer:
         net = self.model().to(d)
         
         # Leverage Triton or template based matrix multiplications with CUDA graphs
-        net = compile(net, mode="max-autotune")
+        compiled_net = compile(net, mode="max-autotune")
 
         # States criteria to evaluate loss and optimiser
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.AdamW(net.parameters(), lr=self.lr)
+        optimizer = optim.AdamW(compiled_net.parameters(), lr=self.lr)
 
         # Load train and test loader
         ttl = TTL(root_dir=self.root_dir)
@@ -119,7 +119,7 @@ class Trainer:
         # Start training
         for epoch in range(self.max_epochs):
             # Set model into training mode and reset training running loss
-            net.train()
+            compiled_net.train()
             running_tloss = 0
 
             # Iterates through inputs and labels in trainloader
@@ -131,7 +131,7 @@ class Trainer:
 
                 # Runs forward pass with autocasting
                 with autocast(device_type=self.device, dtype=float16):
-                    outputs = net(inputs)
+                    outputs = compiled_net(inputs)
                     loss = criterion(outputs, labels)
 
                 # Add to running loss
@@ -151,7 +151,7 @@ class Trainer:
                     print(f'[{epoch + 1}, {i + 1:5d}]')
 
             # Set model to evaluation mode and set running validation loss
-            net.eval()
+            compiled_net.eval()
             running_vloss = 0
 
             # Disable gradient calculation
@@ -159,9 +159,10 @@ class Trainer:
                 # Iterates through inputs and labels in testloader
                 for vinputs, vlabels in testloader:
                     vinputs, vlabels = vinputs.to(d), vlabels.to(d)
+
                     with autocast(device_type=self.device, dtype=float16):
                         # Get outputs and calculate validation loss
-                        voutputs = net(vinputs)
+                        voutputs = compiled_net(vinputs)
                         vloss = criterion(voutputs, vlabels)
 
                     # Add validation loss to running validation loss
@@ -183,6 +184,7 @@ class Trainer:
             if vloss < lowest_loss:
                 lowest_loss = vloss
                 patience_counter = 0
+
                 self.save_model(net.state_dict(), f"{self.save_folder}/{self.name}_t{tloss:.3f}_v{vloss:.3f}.pt")
             else:
                 patience_counter += 1

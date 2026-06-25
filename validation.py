@@ -1,7 +1,6 @@
-from torch import load, device, accelerator, no_grad
+from torch import load, device, accelerator, no_grad, amp, autocast, backends, autograd, float16, compile, set_float32_matmul_precision
 from torch import max as tmax
-from torch.nn.functional import softmax
-from torch.nn import Module
+from torch.nn import Module, functional
 import pandas as pd
 
 from dataloader import TrainTestLoader, CHARSET
@@ -33,18 +32,30 @@ class Validator:
         self.root_dir = root_dir
 
         # Finds hardware accelerators and utilises that if possible. (CUDA, ROCm, TPU, MPS)
-        self.device = device(accelerator.current_accelerator().type if accelerator.is_available() else 'cpu')
+        self.device = accelerator.current_accelerator().type if accelerator.is_available() else 'cpu'
         print(f"Using device: {self.device}")
 
     def check_acc(self) -> dict:
         """
         Runs model in prediction mode though data in self.root_dir
         """
+
+        d = device(self.device)
+
+        # Enable NVIDIA cuDNN auto tuner
+        backends.cudnn.benchmark = True
+
+        # Disable debugging APIs
+        autograd.set_detect_anomaly(False)
+        autograd.profiler.profile(False)
+
+        set_float32_matmul_precision("high")
         
         # Creates model object and puts it on self.device
         # Then loads the state_dict from saved models
-        net = self.model().to(self.device)
+        net = self.model().to(d)
         net.load_state_dict(load(self.path, weights_only=True))
+        compiled_net = compile(net, mode="max-autotune")
 
         # Load testloader
         ttl = TrainTestLoader(root_dir=self.root_dir, split=0.99)
@@ -69,18 +80,20 @@ class Validator:
         }
 
         # Set mode in evaluation mode and disable gradient calculation
-        net.eval()
+        compiled_net.eval()
 
         with no_grad():
             # Iterates through inputs and labels in testloader
             for i, (images, labels) in enumerate(tl):
                 # Puts inputs and labels on self.device
-                images, labels = images.to(self.device), labels.to(self.device)
+                images, labels = images.to(d), labels.to(d)
 
-                # Get top prediction and confidence
-                outputs = net(images)
-                probs = softmax(outputs, dim=1)
-                conf, predicted = tmax(probs, 1)  # https://stackoverflow.com/questions/69154022/how-to-get-confidence-score-from-a-trained-pytorch-model
+                with autocast(device_type=self.device, dtype=float16):
+                    # Get top prediction and confidence
+                    outputs = compiled_net(images)
+
+                    probs = functional.softmax(outputs, dim=1)
+                    conf, predicted = tmax(probs, 1)  # https://stackoverflow.com/questions/69154022/how-to-get-confidence-score-from-a-trained-pytorch-model
 
                 # Iterates through given images.
                 for j in range(len(images)):
@@ -123,12 +136,12 @@ class Validator:
         df.to_csv(filepath, index=False)
 
 if __name__ == "__main__":
-    from models import ocr_v2 as model
+    import models
 
     validator = Validator(
-        path="models/models_F/ocr_v2_F_5.pt",
-        model=model,
-        root_dir="dataset/character_images_no_noise"
+        path="new_models/models_T/ocr_v5_t0.313_v0.062.pt",
+        model=models.ocr_v5,
+        root_dir="dataset/character_images_with_noise"
     )
     print("starting validation")
     results = validator.check_acc()
