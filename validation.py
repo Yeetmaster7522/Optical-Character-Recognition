@@ -47,7 +47,7 @@ class Validator:
         net.load_state_dict(load(self.path, weights_only=True))
 
         # Load testloader
-        ttl = TrainTestLoader(root_dir=self.root_dir, split=1)
+        ttl = TrainTestLoader(root_dir=self.root_dir, split=0.99)
         tl = ttl.testloader
         
         # Courtesy of Copilot. 
