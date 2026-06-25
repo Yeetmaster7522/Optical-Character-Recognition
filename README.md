@@ -7,7 +7,7 @@ Goal is to create a good CNN to perform optical character recognition. ***Runnin
 
 ### Dependencies
 
-Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, and Pillow.
+Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, Pillow and tqdm.
 
 > Commands below will install all dependencies:
 >
@@ -15,6 +15,7 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, and Pillow.
 > - pip install matplotlib
 > - pip install pandas
 > - pip install scikit-learn
+> - pip install tqdm
 >
 > To install PyTorch with GPU support visit [this page](https://pytorch.org/get-started/locally/) for more details
 
