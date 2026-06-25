@@ -220,14 +220,14 @@ class ocr_v4(nn.Module):
     def __init__(self):
         super().__init__()
         self.block1 = nn.Sequential(
-            nn.Conv2d(1, 16, 3, padding=1),
+            nn.Conv2d(1, 16, 3, padding=1, bias=False),
             nn.BatchNorm2d(16),
             nn.ReLU(),
             nn.MaxPool2d(2, 2)
         )
 
         self.block2 = nn.Sequential(
-            nn.Conv2d(16, 32, 3, padding=1),
+            nn.Conv2d(16, 32, 3, padding=1, bias=False),
             nn.BatchNorm2d(32),
             nn.ReLU(),
             nn.MaxPool2d(2, 2)
