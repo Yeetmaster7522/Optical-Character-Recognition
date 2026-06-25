@@ -1,5 +1,5 @@
 import torch.optim as optim
-from torch import nn, save, accelerator, no_grad, amp, autocast, backends, bfloat16
+from torch import nn, save, accelerator, no_grad, amp, autocast, backends, autograd, bfloat16, compile, set_float32_matmul_precision
 
 import matplotlib.pyplot as plt
 
@@ -80,10 +80,20 @@ class Trainer:
         Training loop.
         """
 
+        # Enable NVIDIA cuDNN auto tuner
         backends.cudnn.benchmark = True
+
+        # Disable debugging APIs
+        autograd.set_detect_anomaly(False)
+        autograd.profiler.profile(False)
+
+        set_float32_matmul_precision("high")
         
-        # Creates model object and puts it on self.device
-        net = self.model().to(self.device)
+        # Creates and compiles model object
+        net = self.model()
+        
+        # Leverage Triton or template based matrix multiplications with CUDA graphs
+        net = compile(net, mode="max-autotune")
 
         # States criteria to evaluate loss and optimiser
         criterion = nn.CrossEntropyLoss()
