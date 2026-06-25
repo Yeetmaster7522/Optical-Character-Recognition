@@ -3,7 +3,6 @@ from torch import nn, save, accelerator, no_grad, amp, autocast, bfloat16, backe
 
 import matplotlib.pyplot as plt
 
-from models import ocr_v1 as model
 from dataloader import TrainTestLoader as TTL
 
 class Trainer:
@@ -184,6 +183,8 @@ class Trainer:
         return tlosses, vlosses
 
 if __name__ == "__main__":
+    from models import ocr_v1 as model
+    
     trainer = Trainer(
         name=model.__name__,
         model=model,

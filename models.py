@@ -10,6 +10,7 @@ all uppercase and lowercase english letters, digit 0-9, @ # $ % & + ? < >
 
 from torch import nn, flatten
 import torch.nn.functional as F
+from torch.utils.checkpoint import checkpoint
 
 class ocr_v1(nn.Module):
     """
@@ -30,21 +31,32 @@ class ocr_v1(nn.Module):
     
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 6, 5) #out = (in - kernel_size) + 1
-        self.pool = nn.MaxPool2d(2, 2) #out = in / 2
-        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.block1 = nn.Sequential(
+            nn.Conv2d(1, 6, 5), #out = (in - kernel_size) + 1
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2) #out = in / 2
+        )
 
-        self.fc1 = nn.Linear(16 * 4 * 4, 120) #in_features = channels * dimension
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 71)
+        self.block2 = nn.Sequential(
+            nn.Conv2d(6, 16, 5),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2)
+        )
+
+        self.fcl = nn.Sequential(
+            nn.Linear(16 * 4 * 4, 120), #in_features = channels * dimension
+            nn.ReLU(),
+            nn.Linear(120, 84),
+            nn.ReLU(),
+            nn.Linear(84, 71)
+        )
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x))) #12x12
-        x = self.pool(F.relu(self.conv2(x))) #4x4
+        x = checkpoint(self.block1, x, use_reentrant=False) #12x12
+        x = checkpoint(self.block2, x, use_reentrant=False) #4x4
+        
         x = flatten(x, 1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = checkpoint(self.fcl, x, use_reentrant=False)
         return x
 
 class ocr_v2(nn.Module):
@@ -66,21 +78,32 @@ class ocr_v2(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 16, 3) #out = (in - kernel_size) + 1
-        self.pool = nn.MaxPool2d(2, 2) #out = in / 2
-        self.conv2 = nn.Conv2d(16, 32, 3)
+        self.block1 = nn.Sequential(
+            nn.Conv2d(1, 16, 3), #out = (in - kernel_size) + 1
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2) #out = in / 2
+        )
 
-        self.fc1 = nn.Linear(32 * 5 * 5, 240) #in_features = channels * dimension
-        self.fc2 = nn.Linear(240, 168)
-        self.fc3 = nn.Linear(168, 71)
+        self.block2 = nn.Sequential(
+            nn.Conv2d(16, 32, 3),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2)
+        )
+
+        self.fcl = nn.Sequential(
+            nn.Linear(32 * 5 * 5, 240), #in_features = channels * dimension
+            nn.ReLU(),
+            nn.Linear(240, 168),
+            nn.ReLU(),
+            nn.Linear(168, 71)
+        )
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x))) #28-3+1=26 26/2=13
-        x = self.pool(F.relu(self.conv2(x))) #13-3+1=11 11/2=5.5
+        x = checkpoint(self.block1, x, use_reentrant=False)
+        x = checkpoint(self.block2, x, use_reentrant=False)
+
         x = flatten(x, 1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = checkpoint(self.fcl, x, use_reentrant=False)
         return x
     
 class ocr_v3(nn.Module):
@@ -89,34 +112,44 @@ class ocr_v3(nn.Module):
 
     Model architecture:
         - conv(1,32,3)
-        - relu
         - pool(2,2)
         - conv(32,64,3)
-        - relu
         - pool(2,2)
-        - flatten
-        - fcl(1600, 240)
-        - fc2(240, 168)
-        - fc3(168, 71)
+        - linear(1600, 240)
+        - linear(240, 168)
+        - linear(168, 71)
     """
 
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 32, 3) #out = (in - kernel_size) + 1
-        self.pool = nn.MaxPool2d(2, 2) #out = in / 2
-        self.conv2 = nn.Conv2d(32, 64, 3)
+        self.block1 = nn.Sequential(
+            nn.Conv2d(1, 32, 3), #out = (in - kernel_size) + 1
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2) #out = in / 2
+        )
+        
+        self.block2 = nn.Sequential(
+            nn.Conv2d(32, 64, 3),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2)
+        )
 
-        self.fc1 = nn.Linear(64 * 5 * 5, 240) #in_features = channels * dimension
-        self.fc2 = nn.Linear(240, 168)
-        self.fc3 = nn.Linear(168, 71)
+        self.fcl = nn.Sequential(
+            nn.Linear(64 * 5 * 5, 240), #in_features = channels * dimension
+            nn.ReLU(),
+
+            nn.Linear(240, 168),
+            nn.ReLU(),
+
+            nn.Linear(168, 71)
+        )
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x))) #28-3+1=26 26/2=13
-        x = self.pool(F.relu(self.conv2(x))) #13-3+1=11 11/2=5.5
+        x = checkpoint(self.block1, x, use_reentrant=False) #28-3+1=26 26/2=13
+        x = checkpoint(self.block2, x, use_reentrant=False) #13-3+1=11 11/2=5.5
+
         x = flatten(x, 1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = checkpoint(self.fcl, x, use_reentrant=False)
         return x
     
 class ocr_v4(nn.Module):
@@ -145,41 +178,35 @@ class ocr_v4(nn.Module):
         super().__init__()
         self.block1 = nn.Sequential(
             nn.Conv2d(1, 16, 3, padding=1),
-            # nn.ReLU(),
-            # nn.Conv2d(16, 16, 3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2, 2)
         )
 
         self.block2 = nn.Sequential(
             nn.Conv2d(16, 32, 3, padding=1),
-            # nn.ReLU(),
-            # nn.Conv2d(32, 32, 3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2, 2)
         )
 
         #at this point I'm just gonna ask ChatGPT to calculate the input features for me...
-        self.fc1 = nn.Sequential(
+        self.fcl = nn.Sequential(
             nn.Linear(32 * 7 * 7, 256),
             nn.ReLU(),
-            nn.Dropout(0.1)
-        )
-        self.fc2 = nn.Sequential(
+            nn.Dropout(0.1),
+
             nn.Linear(256, 128),
             nn.ReLU(),
-            nn.Dropout(0.1)
+            nn.Dropout(0.1),
+
+            nn.Linear(128, 71)
         )
-        self.fc3 = nn.Linear(128, 71)
 
     def forward(self, x):
-        x = self.block1(x)
-        x = self.block2(x)
+        x = checkpoint(self.block1, x, use_reentrant=False)
+        x = checkpoint(self.block2, x, use_reentrant=False)
 
         x = flatten(x, 1)
-        x = self.fc1(x)
-        x = self.fc2(x)
-        x = self.fc3(x)
+        x = checkpoint(self.fcl, x, use_reentrant=False)
 
         return x
 
