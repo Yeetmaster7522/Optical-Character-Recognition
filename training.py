@@ -1,5 +1,5 @@
 import torch.optim as optim
-from torch import nn, save, device, accelerator, no_grad
+from torch import nn, save, accelerator, no_grad, amp, autocast, bfloat16, backends
 
 import matplotlib.pyplot as plt
 
@@ -30,7 +30,7 @@ class Trainer:
             save_folder: str,
             root_dir: str,
             max_epochs=100,
-            lr=1e-3,
+            lr=2e-3,
             tloss_checkpoint=0.18,
             max_patience=7
             ):
@@ -60,7 +60,7 @@ class Trainer:
         self.max_patience = max_patience
 
         # Finds hardware accelerators and utilises that if possible. (CUDA, ROCm, TPU, MPS)
-        self.device = device(accelerator.current_accelerator().type if accelerator.is_available() else 'cpu')
+        self.device = accelerator.current_accelerator().type if accelerator.is_available() else 'cpu'
         print(f"Using device: {self.device}")
 
     def save_model(self, state_dict: dict, filepath: str):
@@ -80,6 +80,8 @@ class Trainer:
         """
         Training loop.
         """
+
+        backends.cudnn.benchmark = True
         
         # Creates model object and puts it on self.device
         net = self.model().to(self.device)
@@ -100,6 +102,9 @@ class Trainer:
         lowest_loss = self.tloss_checkpoint # Lowest loss achieved
         patience_counter = 0 # Epochs gone without achieving a new lowest loss
 
+        # Create GradScaler once at beginning of training
+        scaler = amp.GradScaler(self.device)
+
         # Start training
         for epoch in range(self.max_epochs):
             # Set model into training mode and reset training running loss
@@ -108,22 +113,28 @@ class Trainer:
 
             # Iterates through inputs and labels in trainloader
             for i, (inputs, labels) in enumerate(trainloader, 0):
-                # Puts inputs and labels onto self.device
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
+                # Clears accumulated gradients
+                optimizer.zero_grad(set_to_none=True)
 
-                # Backpropagation
-                optimizer.zero_grad() # Clears accumulated gradients
-
-                outputs = net(inputs) # Get outputs from inputs
-                loss = criterion(outputs, labels) # Get loss based on criterion
-                loss.backward() # Calculates gradients
-                optimizer.step() # Applies calculated gradients to update model weights
+                # Runs forward pass with autocasting
+                with autocast(device_type=self.device, dtype=bfloat16):
+                    outputs = net(inputs)
+                    loss = criterion(outputs, labels)
 
                 # Add to running loss
                 running_tloss += loss.item()
 
-                # Print progress every 200 mini-batches
-                if i % 200 == 199:
+                # Scales loss and then calls backward on scaled loss to create scaled gradients
+                scaler.scale(loss).backward()
+                
+                # First unscales gradients and then update model parameters
+                scaler.step(optimizer)
+
+                # Updates scale for next iteration
+                scaler.update()
+
+                # Print progress every 100 mini-batches
+                if i % 100 == 99:
                     print(f'[{epoch + 1}, {i + 1:5d}]')
 
             # Set model to evaluation mode and set running validation loss
@@ -134,19 +145,17 @@ class Trainer:
             with no_grad():
                 # Iterates through inputs and labels in testloader
                 for vinputs, vlabels in testloader:
-                    # Puts inputs and labels on self.device
-                    vinputs, vlabels = vinputs.to(self.device), vlabels.to(self.device)
-
-                    # Get outputs and calculate validation loss
-                    voutputs = net(vinputs)
-                    vloss = criterion(voutputs, vlabels)
+                    with autocast(device_type=self.device, dtype=bfloat16):
+                        # Get outputs and calculate validation loss
+                        voutputs = net(vinputs)
+                        vloss = criterion(voutputs, vlabels)
 
                     # Add validation loss to running validation loss
                     running_vloss += vloss.item()
 
             # Calculate average training loss and validation loss
-            tloss = running_tloss / len(trainloader)
-            vloss = running_vloss / len(testloader)
+            tloss = running_tloss / ttl.train_totalbatches
+            vloss = running_vloss / ttl.test_totalbatches
 
             # Save averages in array
             tlosses.append(tloss)
@@ -180,10 +189,29 @@ if __name__ == "__main__":
         model=model,
         save_folder="models/models_F",
         root_dir="dataset/character_images_no_noise",
-        max_epochs=3
+        max_epochs=10
     )
+    # Train model, tloss is train loss, and vloss is validation/test loss
     tloss, vloss = trainer.train()
+
+    # Calculate difference between tloss and vloss over epochs
+    loss_dif = [abs(t-vloss[i]) for i,t in enumerate(tloss)]
+
+    # Finished training and creating graphs
     print("Training Finished!")
-    plt.plot([e+1 for e in range(len(tloss))], tloss)
-    plt.plot([e+1 for e in range(len(vloss))], vloss)
+
+    # Creates an array of epoch numbers from 1 to n
+    epochs = [e+1 for e in range(len(tloss))]
+
+    # Plot training and validation loss
+    plt.plot(epochs, tloss, color="red", label="Train loss")
+    plt.plot(epochs, vloss, color="green", label="Test loss")
+    
+    # Plot loss difference between tloss and vloss
+    plt.plot(epochs, loss_dif, color="blue", linestyle="-.", label="Loss diff")
+    
+    # Show graph
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.legend()
     plt.show()

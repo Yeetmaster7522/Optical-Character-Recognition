@@ -134,6 +134,9 @@ class TrainTestLoader:
         # Batch size reference for other programs
         self.batch_size = batch_size
 
+        self.train_totalbatches = len(self.trainloader)
+        self.test_totalbatches = len(self.testloader)
+
 def imshow(img: tv_tensors.Image):
     """
     Takes a PyTorch image tensor and displays it using matplotlib.
