@@ -37,4 +37,4 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, and Pillow.
 
 ---
 # Note to self
-Need to hyperoptimise training to make it as fast as possible. Need to make "UI" nice and easy for people to read. Add progress bars. Employ multithreading in order to do multiple things at once. Force limit on how many models are saved per training run. Need more graphics during training to see where the models are struggling such as on characters, fonts, confidence. Add entire google font library for fun. Do wingdings for maximum pain and suffering >:).
+Need to hyperoptimise training to make it as fast as possible. Add progress bars. Force limit on how many models are saved per training run. Add entire google font library for fun. Do wingdings for maximum pain and suffering >:). Add accuracy and confidence per font.
