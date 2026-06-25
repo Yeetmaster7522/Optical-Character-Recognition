@@ -250,17 +250,21 @@ class Main:
         confidence_sum = [0 for _ in CHARSET]
         correct = [0 for _ in CHARSET]
         totals = [0 for _ in CHARSET]
+        font_counts = {}
 
         # Iterates through each entry in results and notes down prediction, and the actual
         # character as well as incrementing correct and totals as well as adding to sum of
         # confidence per character.
         for i in range(len(results["filename"])):
-            # filename = results["filename"][i]
+            font = results["filename"][i].split("_")[0]
             pred = results["predicted letter"][i] # Precicted letter
             actual = results["actual letter"][i] # Actual letter
             result = results["result"][i] # Result of prediction "Pass" or "Fail"
             conf = float(results["confidence score"][i]) # Confidence score
             j = CHARSET.index(actual) # Index of actual letter within CHARSET
+
+            if font not in font_counts:
+                font_counts[font] = {"correct": 0, "total": 0}
 
             # Character/letter has to be turned into index here to match neural network output
             y_test.append(char_to_idx[actual]) # Appends actual letter to y_test
@@ -269,12 +273,14 @@ class Main:
             # Adds confidence to sum at index j
             confidence_sum[j] += float(conf)
 
-            # If the result was a pass then it will increment correct at index j
+            # If the result was a pass then it will increment correct at index j and font
             if result == "Pass":
                 correct[j] += 1
+                font_counts[font][correct] += 1
 
-            # Adds total at index j
+            # Adds total at index j and font
             totals[j] += 1
+            font_counts[font]["total"] += 1
 
         # Calculates confidence avg and percentage of correct predictions up to 2 d.p. and puts
         # them into a dictionary for plotting
@@ -282,6 +288,15 @@ class Main:
             "confidence_avg": [round(conf/totals[i], 2) for i,conf in enumerate(confidence_sum)],
             "correct_pct": [round(count/totals[i], 2) for i,count in enumerate(correct)]
         }
+
+        # Calculate accuracy per class
+        font_keys = font_counts.keys()
+        font_acc = [
+            round(
+            font_counts[k]["correct"]/font_counts[k]["total"], 
+            2
+            ) for k in font_keys
+        ]
 
         # Creates confusion matrix based of y_test and y_pred
         ConfusionMatrixDisplay.from_predictions(
@@ -303,11 +318,20 @@ class Main:
         for container in res.bar_containers:
             ax.bar_label(container, padding=3)
 
-        # Set labels and show barchart
+        # Set labels and show barcharts
         ax.set_ylabel("%")
         ax.set_title("Confidence and Accuracy by Character")
         ax.legend(loc="upper left", ncols=2)
         plt.show()
+
+        # Create barchart for fonts
+        plt.bar(font_keys, font_acc)
+
+        # Set labels and show barchart
+        ax.set_ylabel("%")
+        ax.set_title("Accuracy per Font")
+        ax.legend(loc="upper left", ncols=2)
+        plt.bar()
 
 
 

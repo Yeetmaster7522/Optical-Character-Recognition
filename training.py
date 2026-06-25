@@ -3,6 +3,8 @@ from torch import nn, save, accelerator, device, no_grad, amp, autocast, backend
 
 import matplotlib.pyplot as plt
 
+from tqdm import tqdm
+
 from dataloader import TrainTestLoader as TTL
 
 class Trainer:
@@ -72,8 +74,6 @@ class Trainer:
         """
         
         save(state_dict, filepath)
-        print("Model saved")
-
 
     def train(self):
         """
@@ -118,84 +118,95 @@ class Trainer:
 
         # Start training
         for epoch in range(self.max_epochs):
-            # Set model into training mode and reset training running loss
-            compiled_net.train()
-            running_tloss = 0
+            with tqdm(
+                total=ttl.train_totalbatches+ttl.test_totalbatches, 
+                desc=f"Epoch: {epoch+1}"
+                ) as pbar:
+                # Set model into training mode and reset training running loss
+                compiled_net.train()
+                running_tloss = 0
 
-            # Iterates through inputs and labels in trainloader
-            for i, (inputs, labels) in enumerate(trainloader, 0):
-                inputs, labels = inputs.to(d), labels.to(d)
+                # Iterates through inputs and labels in trainloader
+                for inputs, labels in trainloader:
+                    pbar.update(1)
 
-                # Clears accumulated gradients
-                optimizer.zero_grad(set_to_none=True)
+                    inputs, labels = inputs.to(d), labels.to(d)
 
-                # Runs forward pass with autocasting
-                with autocast(device_type=self.device, dtype=float16):
-                    outputs = compiled_net(inputs)
-                    loss = criterion(outputs, labels)
+                    # Clears accumulated gradients
+                    optimizer.zero_grad(set_to_none=True)
 
-                # Add to running loss
-                running_tloss += loss.item()
-
-                # Scales loss and then calls backward on scaled loss to create scaled gradients
-                scaler.scale(loss).backward()
-                
-                # First unscales gradients and then update model parameters
-                scaler.step(optimizer)
-
-                # Updates scale for next iteration
-                scaler.update()
-
-                # Print progress every 100 mini-batches
-                if i % 100 == 99:
-                    print(f'[{epoch + 1}, {i + 1:5d}]')
-
-            # Set model to evaluation mode and set running validation loss
-            compiled_net.eval()
-            running_vloss = 0
-
-            # Disable gradient calculation
-            with no_grad():
-                # Iterates through inputs and labels in testloader
-                for vinputs, vlabels in testloader:
-                    vinputs, vlabels = vinputs.to(d), vlabels.to(d)
-
+                    # Runs forward pass with autocasting
                     with autocast(device_type=self.device, dtype=float16):
-                        # Get outputs and calculate validation loss
-                        voutputs = compiled_net(vinputs)
-                        vloss = criterion(voutputs, vlabels)
+                        outputs = compiled_net(inputs)
+                        loss = criterion(outputs, labels)
 
-                    # Add validation loss to running validation loss
-                    running_vloss += vloss.item()
+                    # Add to running loss
+                    running_tloss += loss.item()
 
-            # Calculate average training loss and validation loss
-            tloss = running_tloss / ttl.train_totalbatches
-            vloss = running_vloss / ttl.test_totalbatches
+                    # Scales loss and then calls backward on scaled loss to create scaled gradients
+                    scaler.scale(loss).backward()
+                    
+                    # First unscales gradients and then update model parameters
+                    scaler.step(optimizer)
 
-            # Save averages in array
-            tlosses.append(tloss)
-            vlosses.append(vloss)
+                    # Updates scale for next iteration
+                    scaler.update()
 
-            # Display current train and validation loss
-            print(f'loss: {tloss:.3f}\nvloss: {vloss:.3f}')
+                # Set model to evaluation mode and set running validation loss
+                compiled_net.eval()
+                running_vloss = 0
 
-            # If validation loss avg over epoch smaller than lowest loss then will save
-            # Else, adds to patience counter
-            if vloss < lowest_loss:
-                lowest_loss = vloss
-                patience_counter = 0
+                # Disable gradient calculation
+                with no_grad():
+                    # Iterates through inputs and labels in testloader
+                    for vinputs, vlabels in testloader:
+                        pbar.update(1)
 
-                self.save_model(net.state_dict(), f"{self.save_folder}/{self.name}_t{tloss:.3f}_v{vloss:.3f}.pt")
-            else:
-                patience_counter += 1
+                        vinputs, vlabels = vinputs.to(d), vlabels.to(d)
 
-            # If ran out of patience then will stop training
-            # Else outputs how much patience it has used up
-            if patience_counter > self.max_patience:
-                print("EARLY STOPPING TRIGGERED")
-                break
-            else:
-                print(f"Patience: {patience_counter}/{self.max_patience}")
+                        with autocast(device_type=self.device, dtype=float16):
+                            # Get outputs and calculate validation loss
+                            voutputs = compiled_net(vinputs)
+                            vloss = criterion(voutputs, vlabels)
+
+                        # Add validation loss to running validation loss
+                        running_vloss += vloss.item()
+
+                # Calculate average training loss and validation loss
+                tloss = running_tloss / ttl.train_totalbatches
+                vloss = running_vloss / ttl.test_totalbatches
+
+                # Save averages in array
+                tlosses.append(tloss)
+                vlosses.append(vloss)
+
+                pbar.refresh()
+                pbar.disable = True
+
+                # Display current train and validation loss
+                tqdm.write("")
+                tqdm.write(f"tloss: {tloss:.2f}")
+                tqdm.write(f"vloss: {vloss:.2f}")
+
+                # If validation loss avg over epoch smaller than lowest loss then will save
+                # Else, adds to patience counter
+                if vloss < lowest_loss:
+                    lowest_loss = vloss
+                    patience_counter = 0
+
+                    self.save_model(net.state_dict(), f"{self.save_folder}/{self.name}_t{tloss:.3f}_v{vloss:.3f}.pt")
+                    tqdm.write("Model saved")
+                else:
+                    patience_counter += 1
+
+                # If ran out of patience then will stop training
+                # Else outputs how much patience it has used up
+                if patience_counter > self.max_patience:
+                    tqdm.write("EARLY STOPPING TRIGGERED")
+                    break
+                else:
+                    tqdm.write(f"Patience: {patience_counter}/{self.max_patience}")
+                tqdm.write("")
 
         return tlosses, vlosses
 
@@ -206,7 +217,7 @@ if __name__ == "__main__":
         name=model.__name__,
         model=model,
         save_folder="models/models_F",
-        root_dir="dataset/character_images_no_noise",
+        root_dir="dataset/new_test",
         max_epochs=10
     )
     # Train model, tloss is train loss, and vloss is validation/test loss

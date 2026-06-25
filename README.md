@@ -37,7 +37,5 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, and Pillow.
 
 ---
 # Note to self
-Implement progressbar fully
-Add accuracy and confidence per font
 Train wingdings
 Add entire google font library for fun.
