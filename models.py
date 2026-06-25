@@ -159,18 +159,11 @@ class ocr_v4(nn.Module):
 
     Model architecture:
         - conv(1,16,3, padding=1)
-        - relu
         - pool(2,2)
         - conv(16,32,3, padding=1)
-        - relu
         - pool(2,2)
-        - flatten
         - fcl(1568, 256)
-        - relu
-        - dropout(0.1)
         - fc2(256, 128)
-        - relu
-        - dropout(0.1)
         - fc3(128, 71)
     """
     
@@ -210,6 +203,56 @@ class ocr_v4(nn.Module):
 
         return x
 
-class ocr_v5(nn.Module):
+class ocr_v4(nn.Module):
+    """
+    A child class of nn.Module. Upgrade of ocr_v4
+
+    Model architecture:
+        - conv(1,16,3, padding=1)
+        - pool(2,2)
+        - conv(16,32,3, padding=1)
+        - pool(2,2)
+        - fcl(1568, 256)
+        - fc2(256, 128)
+        - fc3(128, 71)
+    """
+    
     def __init__(self):
         super().__init__()
+        self.block1 = nn.Sequential(
+            nn.Conv2d(1, 16, 3, padding=1),
+            nn.BatchNorm2d(16),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2)
+        )
+
+        self.block2 = nn.Sequential(
+            nn.Conv2d(16, 32, 3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2)
+        )
+
+        #at this point I'm just gonna ask ChatGPT to calculate the input features for me...
+        self.fcl = nn.Sequential(
+            nn.Linear(32 * 7 * 7, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+
+            nn.Linear(256, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+
+            nn.Linear(128, 71)
+        )
+
+    def forward(self, x):
+        x = checkpoint(self.block1, x, use_reentrant=False)
+        x = checkpoint(self.block2, x, use_reentrant=False)
+
+        x = flatten(x, 1)
+        x = checkpoint(self.fcl, x, use_reentrant=False)
+
+        return x

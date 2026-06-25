@@ -1,5 +1,5 @@
 import torch.optim as optim
-from torch import nn, save, accelerator, no_grad, amp, autocast, bfloat16, backends
+from torch import nn, save, accelerator, no_grad, amp, autocast, backends, bfloat16
 
 import matplotlib.pyplot as plt
 
@@ -184,7 +184,7 @@ class Trainer:
 
 if __name__ == "__main__":
     from models import ocr_v1 as model
-    
+
     trainer = Trainer(
         name=model.__name__,
         model=model,
