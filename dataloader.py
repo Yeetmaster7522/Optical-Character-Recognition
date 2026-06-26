@@ -102,6 +102,8 @@ class TrainTestLoader:
         trainloader: Dataloader for trainset
         testloader: Dataloader for testloader
         batch_size: Number of data samples processed in a single iteration
+        train_totalbatches: Number of batches within trainloader
+        test_totalbatches: Number of batches within testloader
     """
     def __init__(self, root_dir: str, seed=42, split=0.2, batch_size=256):
         """
@@ -143,6 +145,45 @@ class TrainTestLoader:
 
         self.train_totalbatches = len(self.trainloader)
         self.test_totalbatches = len(self.testloader)
+
+class FullLoader:
+    """
+    Utility class for CharacterDataset to provide efficent data loading.
+
+    Attributes:
+        dataset: CharacterDataset object
+        testset: Testing dataset
+        loader: Dataloader for testset
+        batch_size: Number of data samples processed in a single iteration
+        totalbatches: Number of batches within loader
+    """
+    def __init__(self, root_dir: str, batch_size=256):
+        """
+        Initialise TrainTestLoader.
+
+        Keyword arguments:
+            root_dir: Filepath where dataset is stored
+        
+        Optional keyword arguments:
+            batch_size: Number of data samples processed in a single iteration
+        """
+        
+        # Transform for images. Converst PIL image, numpy array, or tensor into Image tensor 
+        # and normalises pixel values to be from 0 to 1.
+        transform = v2.Compose([
+            v2.ToImage(),
+            v2.ToDtype(float32, scale=True)
+        ])
+
+        # Create dataset and then directly convert it into dataloader
+        self.dataset = CharacterDataset(root_dir=root_dir, transform=transform)
+        trainset, testset = random_split(self.dataset, [0, 1])
+        self.loader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
+
+        # Batch size reference for other programs
+        self.batch_size = batch_size
+
+        self.totalbatches = len(self.loader)
 
 def imshow(img: tv_tensors.Image):
     """
