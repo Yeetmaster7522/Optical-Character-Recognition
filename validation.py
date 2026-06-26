@@ -2,6 +2,7 @@ from torch import load, device, accelerator, no_grad, amp, autocast, backends, a
 from torch import max as tmax
 from torch.nn import Module, functional
 import pandas as pd
+from tqdm import tqdm
 
 from dataloader import TrainTestLoader, CHARSET
 
@@ -58,7 +59,7 @@ class Validator:
         compiled_net = compile(net, mode="max-autotune")
 
         # Load testloader
-        ttl = TrainTestLoader(root_dir=self.root_dir, split=0.99)
+        ttl = TrainTestLoader(root_dir=self.root_dir, split=1)
         tl = ttl.testloader
         
         # Courtesy of Copilot. 
@@ -82,40 +83,45 @@ class Validator:
         # Set mode in evaluation mode and disable gradient calculation
         compiled_net.eval()
 
-        with no_grad():
-            # Iterates through inputs and labels in testloader
-            for i, (images, labels) in enumerate(tl):
-                # Puts inputs and labels on self.device
-                images, labels = images.to(d), labels.to(d)
+        with tqdm(
+                total=ttl.test_totalbatches,
+                desc=f"Training progress"
+            ) as pbar:
+            with no_grad():
+                # Iterates through inputs and labels in testloader
+                for i, (images, labels) in enumerate(tl):
+                    pbar.update(1)
+                    # Puts inputs and labels on self.device
+                    images, labels = images.to(d), labels.to(d)
 
-                with autocast(device_type=self.device, dtype=float16):
-                    # Get top prediction and confidence
-                    outputs = compiled_net(images)
+                    with autocast(device_type=self.device, dtype=float16):
+                        # Get top prediction and confidence
+                        outputs = compiled_net(images)
 
-                    probs = functional.softmax(outputs, dim=1)
-                    conf, predicted = tmax(probs, 1)  # https://stackoverflow.com/questions/69154022/how-to-get-confidence-score-from-a-trained-pytorch-model
+                        probs = functional.softmax(outputs, dim=1)
+                        conf, predicted = tmax(probs, 1)  # https://stackoverflow.com/questions/69154022/how-to-get-confidence-score-from-a-trained-pytorch-model
 
-                # Iterates through given images.
-                for j in range(len(images)):
-                    # Help from Copilot.
-                    # Gets index of image in the original dataset and uses it to get filename
-                    og_idx = indices[i * tl.batch_size + j]
-                    filename = og_dataset.images[og_idx]["filename"]
+                    # Iterates through given images.
+                    for j in range(len(images)):
+                        # Help from Copilot.
+                        # Gets index of image in the original dataset and uses it to get filename
+                        og_idx = indices[i * tl.batch_size + j]
+                        filename = og_dataset.images[og_idx]["filename"]
 
-                    # Gets predicted and true item
-                    pred = predicted[j].item()
-                    true = labels[j].item()
+                        # Gets predicted and true item
+                        pred = predicted[j].item()
+                        true = labels[j].item()
 
-                    # Saves results
-                    results["filename"].append(filename)
-                    results["actual letter"].append(CHARSET[true])
-                    results["predicted letter"].append(CHARSET[pred])
-                    results["result"].append("Pass" if pred == true else "Fail")
-                    results["confidence score"].append(f"{conf[j]:.2f}")
+                        # Saves results
+                        results["filename"].append(filename)
+                        results["actual letter"].append(CHARSET[true])
+                        results["predicted letter"].append(CHARSET[pred])
+                        results["result"].append("Pass" if pred == true else "Fail")
+                        results["confidence score"].append(f"{conf[j]:.2f}")
 
-                    # Increments correct and total counter
-                    total += 1
-                    correct += (pred == true)
+                        # Increments correct and total counter
+                        total += 1
+                        correct += (pred == true)
 
         # Display accuracy in 2 d.p.
         print(f"Accuracy [{total}]: {100 * correct / total:.2f}%")
@@ -139,9 +145,9 @@ if __name__ == "__main__":
     import models
 
     validator = Validator(
-        path="new_models/models_T/ocr_v5_t0.313_v0.062.pt",
+        path="models/models_F/ocr_v5_t0.052_v0.044.pt",
         model=models.ocr_v5,
-        root_dir="dataset/character_images_with_noise"
+        root_dir="dataset/character_images_no_noise"
     )
     print("starting validation")
     results = validator.check_acc()

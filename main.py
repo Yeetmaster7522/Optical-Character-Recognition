@@ -337,8 +337,8 @@ class Main:
 
 if __name__ == "__main__":
     main = Main(
-        model_dir="new_models/models_T", 
-        train_dir="dataset/character_images_with_noise",
-        test_dir="dataset/character_images_with_noise"
+        model_dir="models/models_F", 
+        train_dir="dataset/character_images_no_noise",
+        test_dir="dataset/character_images_no_noise"
     )
     main.loop()

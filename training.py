@@ -5,11 +5,7 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 
-import warnings
-
 from dataloader import TrainTestLoader as TTL
-
-warnings.filterwarnings("ignore", category=UserWarning, module="torch.utils.data.dataloader")
 
 class Trainer:
     """
