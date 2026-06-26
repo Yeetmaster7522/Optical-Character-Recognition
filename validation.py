@@ -4,7 +4,7 @@ from torch.nn import Module, functional
 import pandas as pd
 from tqdm import tqdm
 
-from dataloader import TrainTestLoader, CHARSET
+from dataloader import CHARSET
 
 class Validator:
     """
@@ -36,7 +36,11 @@ class Validator:
         self.device = accelerator.current_accelerator().type if accelerator.is_available() else 'cpu'
         print(f"Using device: {self.device}")
 
-    def check_acc(self) -> dict:
+    def update(self, model, path):
+        self.model = model
+        self.path = path
+
+    def check_acc(self, fl) -> dict:
         """
         Runs model in prediction mode though data in self.root_dir
         """
@@ -59,8 +63,7 @@ class Validator:
         compiled_net = compile(net, mode="max-autotune")
 
         # Load testloader
-        ttl = TrainTestLoader(root_dir=self.root_dir, split=1)
-        tl = ttl.testloader
+        tl = fl.loader
         
         # Courtesy of Copilot. 
         subset = tl.dataset
@@ -84,7 +87,7 @@ class Validator:
         compiled_net.eval()
 
         with tqdm(
-                total=ttl.test_totalbatches,
+                total=fl.totalbatches,
                 desc=f"Testing progress"
             ) as pbar:
             with no_grad():

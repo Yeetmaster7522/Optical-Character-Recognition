@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 
-from dataloader import TrainTestLoader as TTL
+from dataloader import TrainTestLoader
 
 class Trainer:
     """
@@ -27,7 +27,7 @@ class Trainer:
     def __init__(
             self,
             name: str,
-            model:nn.Module,
+            model: nn.Module,
             save_folder: str,
             root_dir: str,
             max_epochs=100,
@@ -64,6 +64,11 @@ class Trainer:
         self.device = accelerator.current_accelerator().type if accelerator.is_available() else 'cpu'
         print(f"Using device: {self.device}")
 
+    def update(self, name, model, save_folder):
+        self.name = name
+        self.model = model
+        self.save_folder = save_folder
+
     def save_model(self, state_dict: dict, filepath: str):
         """
         Saves model
@@ -75,9 +80,12 @@ class Trainer:
         
         save(state_dict, filepath)
 
-    def train(self):
+    def train(self, ttl: TrainTestLoader):
         """
-        Training loop.
+        Training loop. Returns train loss and validation loss.
+
+        Keyword arguments:
+            ttl: TrainTestLoader class
         """
 
         d = device(self.device)
@@ -102,7 +110,6 @@ class Trainer:
         optimizer = optim.AdamW(compiled_net.parameters(), lr=self.lr)
 
         # Load train and test loader
-        ttl = TTL(root_dir=self.root_dir)
         trainloader = ttl.trainloader
         testloader = ttl.testloader
 
@@ -182,7 +189,7 @@ class Trainer:
             vlosses.append(vloss)
 
             # Display current train and validation loss
-            print(f"\t|-> Train loss: {tloss:.2f}\n\t|-> Validation loss: {vloss:.2f}")
+            print(f"\t|-> Train loss: {tloss:.3f}\n\t|-> Validation loss: {vloss:.3f}")
 
             # If validation loss avg over epoch smaller than lowest loss then will save
             # Else, adds to patience counter
