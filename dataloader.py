@@ -10,6 +10,9 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import warnings
+
+warnings.filterwarnings("ignore", category=UserWarning, module="torch.utils.data.dataloader")
 
 """
 CHARSET and char_to_idx written by Copilot.
@@ -128,9 +131,13 @@ class TrainTestLoader:
         self.trainset, self.testset = random_split(self.dataset, [1-split, split], generator=generator)
 
         # Create dataloaders
-        self.trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
-        self.testloader = DataLoader(self.testset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
+        if split != 1:
+            self.trainloader = DataLoader(self.trainset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+        else:
+            self.trainloader = []
         
+        self.testloader = DataLoader(self.testset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
+
         # Batch size reference for other programs
         self.batch_size = batch_size
 
