@@ -36,7 +36,8 @@ class Main:
             models.ocr_v2,
             models.ocr_v3,
             models.ocr_v4,
-            models.ocr_v5
+            models.ocr_v5,
+            models.ocr_wingding
         ]
         self.model_dir = model_dir
         self.train_dir = train_dir
@@ -276,7 +277,7 @@ class Main:
             # If the result was a pass then it will increment correct at index j and font
             if result == "Pass":
                 correct[j] += 1
-                font_counts[font][correct] += 1
+                font_counts[font]["correct"] += 1
 
             # Adds total at index j and font
             totals[j] += 1
@@ -314,7 +315,10 @@ class Main:
         # Create grouped barchart
         fig, ax = plt.subplots(layout="constrained")
 
-        res = ax.grouped_bar(char_means, tick_labels=CHARSET, group_spacing=1)
+        res = ax.grouped_bar(
+            char_means, 
+            tick_labels=CHARSET,
+            group_spacing=1)
         for container in res.bar_containers:
             ax.bar_label(container, padding=3)
 
@@ -337,8 +341,8 @@ class Main:
 
 if __name__ == "__main__":
     main = Main(
-        model_dir="models/models_F", 
-        train_dir="dataset/character_images_no_noise",
-        test_dir="dataset/character_images_no_noise"
+        # model_dir="models/models_F", 
+        # train_dir="dataset/character_images_no_noise",
+        # test_dir="dataset/character_images_no_noise"
     )
     main.loop()

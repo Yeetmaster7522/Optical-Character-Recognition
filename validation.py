@@ -85,7 +85,7 @@ class Validator:
 
         with tqdm(
                 total=ttl.test_totalbatches,
-                desc=f"Training progress"
+                desc=f"Testing progress"
             ) as pbar:
             with no_grad():
                 # Iterates through inputs and labels in testloader

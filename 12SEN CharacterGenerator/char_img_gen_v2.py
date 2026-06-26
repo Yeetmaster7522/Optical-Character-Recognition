@@ -15,7 +15,7 @@ bold = False
 italic = False
 
 #Amount of samples for each character in each font
-num_images = 100
+num_images = 200
 
 #Output settings
 size = 28

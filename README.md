@@ -36,7 +36,10 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, Pillow and tqdm.
 > - ocr_v3_t0.027_v0.030.pt: *98.81%*
 > - ocr_v4_t0.033_v0.027.pt: *98.90%*
 
+### Model accuracy (wingdings) as of 26/06/26, 21:58:
+>
+> - ocr_wingding_t0.000_v0.000.pt: *100%*
+
 ---
 # Note to self
-Train wingdings
 Add entire google font library for fun.

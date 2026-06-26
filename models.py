@@ -258,3 +258,57 @@ class ocr_v5(nn.Module):
         x = checkpoint_sequential(self.fcl, chunks, x, use_reentrant=False)
 
         return x
+    
+class ocr_wingding(nn.Module):
+    """
+    A child class of nn.Module. Similar architecture to ocr_v5
+
+    Model architecture:
+        - conv(1,16,3, padding=1)
+        - pool(2,2)
+        - conv(16,32,3, padding=1)
+        - pool(2,2)
+        - fcl(1568, 256)
+        - fc2(256, 128)
+        - fc3(128, 52)
+    """
+    
+    def __init__(self):
+        super().__init__()
+        self.block1 = nn.Sequential(
+            nn.Conv2d(1, 16, 3, padding=1, bias=False),
+            nn.BatchNorm2d(16),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2)
+        )
+
+        self.block2 = nn.Sequential(
+            nn.Conv2d(16, 32, 3, padding=1, bias=False),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2)
+        )
+
+        #at this point I'm just gonna ask ChatGPT to calculate the input features for me...
+        self.fcl = nn.Sequential(
+            nn.Linear(32 * 7 * 7, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+
+            nn.Linear(256, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+
+            nn.Linear(128, 52)
+        )
+
+    def forward(self, x):
+        x = checkpoint_sequential(self.block1, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.block2, chunks, x, use_reentrant=False)
+
+        x = flatten(x, 1)
+        x = checkpoint_sequential(self.fcl, chunks, x, use_reentrant=False)
+
+        return x
