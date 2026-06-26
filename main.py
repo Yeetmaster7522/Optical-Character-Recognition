@@ -1,12 +1,11 @@
 import os
-import matplotlib.pyplot as plt
-from torch.nn import Module
-from sklearn.metrics import ConfusionMatrixDisplay #https://stackoverflow.com/questions/74020233/how-to-plot-confusion-matrix-in-pytorch
 
 import models
 from training import Trainer
 from validation import Validator
 from dataloader import CHARSET, char_to_idx
+from dataloader import TrainTestLoader, FullLoader
+import grapher
 
 class Main:
     """
@@ -42,6 +41,20 @@ class Main:
         self.model_dir = model_dir
         self.train_dir = train_dir
         self.test_dir = test_dir
+
+        self.ttl = None
+        self.fl = None
+        self.trainer = Trainer(
+            name="",
+            model=None,
+            save_folder=self.model_dir,
+            root_dir=self.train_dir
+        )
+        self.validator = Validator(
+            path="",
+            model=None,
+            root_dir=self.test_dir
+        )
 
     def list_models(self):
         """
@@ -127,8 +140,17 @@ class Main:
             model = self.model_classes[model_idx]
             print(f"Model will be saved as: {model.__name__}\nIn folder: {self.model_dir}")
 
+            # Update Trainer class
+            self.trainer.update(
+                name=model.__name__,
+                model=model,
+                save_folder=self.model_dir
+            )
+            if self.ttl == None: # Create traintest loader if not exists
+                self.ttl = TrainTestLoader(root_dir=self.train_dir)
+
             # Train model
-            self.train(model)
+            self.train()
 
         # Prediction mode
         elif choice == "p":
@@ -138,7 +160,7 @@ class Main:
             if self.test_dir == "":
                 self.test_dir = self.get_inp("Where do I get testing data? ")
 
-            # Lists model architectures and asks which one they would like to train
+            # Lists model architectures and asks which one they would like to test
             self.list_models()
             model_idx = self.get_inp(
                 display="Select model type from above: ",
@@ -147,7 +169,7 @@ class Main:
             model = self.model_classes[model_idx]
             
             # Lists saved models based off chosen model architecture and asks which one
-            # they would like to train
+            # they would like to test
             files = [f for f in os.listdir(self.model_dir) if model.__name__ in f]
             for i in range(len(files)):
                 print(f"[{i}]: {files[i]}")
@@ -157,9 +179,17 @@ class Main:
                 expected=[i for i in range(len(files))]
             )
 
-            self.test(model, files[saved_idx]) # Predict images using model
+            # Create instance of Trainer class
+            self.validator.update(
+                model=model,
+                path=f"{self.model_dir}/{files[saved_idx]}"
+            )
+            if self.fl == None: # Create full loader if not exists
+                self.fl = FullLoader(root_dir=self.train_dir)
 
-    def train(self, model: Module):
+            self.test() # Predict images using model
+
+    def train(self):
         """
         Trains model and outputs final accuracy and training/testing loss over epochs
 
@@ -167,16 +197,8 @@ class Main:
             model: Model architecture that will be trained
         """
 
-        # Create instance of Trainer class
-        trainer = Trainer(
-            name=model.__name__,
-            model=model,
-            save_folder=self.model_dir,
-            root_dir=self.train_dir
-        )
-        
         # Train model, tloss is train loss, and vloss is validation/test loss
-        tloss, vloss = trainer.train()
+        tloss, vloss = self.trainer.train(self.ttl)
 
         # Calculate difference between tloss and vloss over epochs
         loss_dif = [abs(t-vloss[i]) for i,t in enumerate(tloss)]
@@ -187,20 +209,20 @@ class Main:
         # Creates an array of epoch numbers from 1 to n
         epochs = [e+1 for e in range(len(tloss))]
 
-        # Plot training and validation loss
-        plt.plot(epochs, tloss, color="red", label="Train loss")
-        plt.plot(epochs, vloss, color="green", label="Test loss")
+        # Plot training and validation loss loss difference between tloss and vloss
+        grapher.line_chart(
+            x={
+                "Train loss": tloss,
+                "Test loss": vloss,
+                "Loss diff": loss_dif
+            },
+            y=epochs,
+            xlabel="Epochs",
+            ylabel="Loss",
+            title="Loss over epochs"
+        )
         
-        # Plot loss difference between tloss and vloss
-        plt.plot(epochs, loss_dif, color="blue", linestyle="-.", label="Loss diff")
-        
-        # Show graph
-        plt.xlabel("Epochs")
-        plt.ylabel("Loss")
-        plt.legend()
-        plt.show()
-        
-    def test(self, model: Module, filename: str):
+    def test(self):
         """
         Puts model into prediction mode and outputs accuracy over test dataset.
 
@@ -208,21 +230,14 @@ class Main:
             model: Model architecture that will be used for prediction
             filename: Filename of the model weights that will be loaded into model architecture
         """
-        
-        # Create instance of Validator class
-        validator = Validator(
-            path=f"{self.model_dir}/{filename}",
-            model=model,
-            root_dir=self.test_dir
-        )
 
         print("Starting test...")
 
         # Run model through images in self.test_dir and gets results
-        results = validator.check_acc()
+        results = self.validator.check_acc(self.fl)
 
         # Save results to CSV
-        validator.save_to_csv(results, "results.csv")
+        self.validator.save_to_csv(results, "results.csv")
         print("Results saved in results.csv")
 
         # Show results in graphical form
@@ -299,50 +314,35 @@ class Main:
             ) for k in font_keys
         ]
 
-        # Creates confusion matrix based of y_test and y_pred
-        ConfusionMatrixDisplay.from_predictions(
-            y_test, 
+        # Show confusion matrix based of y_test and y_pred
+        grapher.confusionMatrix_chart(
+            y_test,
             y_pred,
-            include_values=False,
-            display_labels=CHARSET,
-            normalize="true",
-            cmap="Blues"
+            labels=CHARSET
         )
-        # Show confusion matrix
-        plt.show()
 
-        # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
-        # Create grouped barchart
-        fig, ax = plt.subplots(layout="constrained")
+        # Show confidence and accuracy for characters 
+        grapher.groupedBar_chart(
+            char_means,
+            labels=CHARSET,
+            ylabel="%",
+            title="Confidence and Accuracy per Character"
+        )
 
-        res = ax.grouped_bar(
-            char_means, 
-            tick_labels=CHARSET,
-            group_spacing=1)
-        for container in res.bar_containers:
-            ax.bar_label(container, padding=3)
-
-        # Set labels and show barcharts
-        ax.set_ylabel("%")
-        ax.set_title("Confidence and Accuracy by Character")
-        ax.legend(loc="upper left", ncols=2)
-        plt.show()
-
-        # Create barchart for fonts
-        plt.bar(font_keys, font_acc)
-
-        # Set labels and show barchart
-        ax.set_ylabel("%")
-        ax.set_title("Accuracy per Font")
-        ax.legend(loc="upper left", ncols=2)
-        plt.bar()
+        # Show accuracy for fonts
+        grapher.bar_chart(
+            x=font_acc, 
+            y=font_keys, 
+            ylabel="%",
+            title="Accuracy per Font"
+        )
 
 
 
 if __name__ == "__main__":
     main = Main(
-        # model_dir="models/models_F", 
-        # train_dir="dataset/character_images_no_noise",
-        # test_dir="dataset/character_images_no_noise"
+        model_dir="new_models/models_T", 
+        train_dir="dataset/with_noise",
+        test_dir="dataset/noise_test"
     )
     main.loop()

@@ -21,25 +21,13 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, Pillow and tqdm.
 
 ---
 
-### Model accuracy (validation set with noise) as of 20/06/26, 07:26:
-> #### Trained on images without noise
+### Model accuracy (validation set with noise) as of 27/06/26, 00:11:
 >
-> - model_1_F_23: *94.51%*
-> - model_2_F_54: *96.67%*
-> - model_3_F_66: *96.72%*
-> - model_4_F_43: *96.50%*
->
-> #### Trained on images with noise
->
-> - ocr_v1_t0.034_v0.047.pt: *98.55%*
-> - ocr_v2_t0.025_v0.032.pt: *98.81%*
-> - ocr_v3_t0.027_v0.030.pt: *98.81%*
-> - ocr_v4_t0.033_v0.027.pt: *98.90%*
+> - ocr_v1_t0.045_v0.055.pt [411800]: *98.13%*
+> - ocr_v5_t0.030_v0.025.pt [411800]: *98.72%*
+
+---
 
 ### Model accuracy (wingdings) as of 26/06/26, 21:58:
 >
 > - ocr_wingding_t0.000_v0.000.pt: *100%*
-
----
-# Note to self
-Add entire google font library for fun.
