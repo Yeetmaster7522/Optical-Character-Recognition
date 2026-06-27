@@ -204,7 +204,7 @@ class Trainer:
 
             # If ran out of patience then will stop training
             # Else outputs how much patience it has used up
-            if patience_counter > self.max_patience:
+            if patience_counter == self.max_patience:
                 print("\t|-> EARLY STOPPING TRIGGERED")
                 break
             else:
