@@ -3,8 +3,8 @@ new_models/
 dataset/
 __pycache__/
 .venv/
-results.csv
 .vscode/
 character_images_wingdings/
 googleFonts/
 google_fonts/
+results/

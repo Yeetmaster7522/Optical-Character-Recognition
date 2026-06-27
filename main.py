@@ -185,7 +185,7 @@ class Main:
                 path=f"{self.model_dir}/{files[saved_idx]}"
             )
             if self.fl == None: # Create full loader if not exists
-                self.fl = FullLoader(root_dir=self.train_dir)
+                self.fl = FullLoader(root_dir=self.test_dir)
 
             self.test() # Predict images using model
 
