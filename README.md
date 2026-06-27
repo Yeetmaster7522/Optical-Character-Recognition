@@ -25,7 +25,7 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, Pillow and tqdm.
 ### Model accuracy as of 27/06/26:
 >
 > - ocr_v1_t0.045_v0.055.pt: *97.57%*
-> - ocr_v2_t0.026_v0.032.pt: *98.52%*
+> - ocr_v2_t0.026_v0.032.pt: *98.25%*
 > - ocr_v3_t0.027_v0.030.pt: *98.45%*
 > - ocr_v4_t0.051_v0.030.pt: *98.35%*
 > - ocr_v5_t0.030_v0.025.pt: *98.49%*
