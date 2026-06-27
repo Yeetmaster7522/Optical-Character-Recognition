@@ -6,3 +6,5 @@ __pycache__/
 results.csv
 .vscode/
 character_images_wingdings/
+googleFonts/
+google_fonts/

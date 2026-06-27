@@ -16,18 +16,17 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, Pillow and tqdm.
 > - pip install pandas
 > - pip install scikit-learn
 > - pip install tqdm
+> - pip install fonttools (optional)
 >
 > To install PyTorch with GPU support visit [this page](https://pytorch.org/get-started/locally/) for more details
 
 ---
 
-### Model accuracy (validation set with noise) as of 27/06/26, 00:11:
+### Model accuracy as of 27/06/26, 15:16:
 >
-> - ocr_v1_t0.045_v0.055.pt [411800]: *98.13%*
-> - ocr_v5_t0.030_v0.025.pt [411800]: *98.72%*
-
----
-
-### Model accuracy (wingdings) as of 26/06/26, 21:58:
->
-> - ocr_wingding_t0.000_v0.000.pt: *100%*
+> - ocr_v1_t0.045_v0.055.pt: *98.13%*
+> - ocr_v2_t0.026_v0.032.pt: *98.75%*
+> - ocr_v3_t0.027_v0.030.pt: *98.63%*
+> - ocr_v4_t0.051_v0.030.pt: *98.60%*
+> - ocr_v5_t0.030_v0.025.pt: *98.72%*
+> - ocr_wingding_t0.000_v0.000.pt: *100.00%*

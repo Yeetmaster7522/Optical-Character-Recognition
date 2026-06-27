@@ -11,18 +11,18 @@ from random import randint
 complexity = 4      #1-4
 noise = True
 rotation = True
-bold = False
-italic = False
+bold = True
+italic = True
 
 #Amount of samples for each character in each font
-num_images = 200
+num_images = 50
 
 #Output settings
 size = 28
 img_size = (size, size)
 font_sizes = {'Aclonica': 24, 'BowlbyOneSC': 24, 'FontdinerSwanky': 24, 'HomemadeApple': 18, 'Pacifico': 24}
 #Default font size is 28pt; if a font needs a custom size, add it to the dictionary above
-output_dir = "character_images_wingdings"
+output_dir = "google_fonts"
 
 #Fonts
 #To generate characters for additional fonts:
@@ -34,7 +34,7 @@ sansList = ['Arial', 'Calibri', 'Comfortaa', 'Montserrat', 'Oxygen', 'Verdana']
 monoList = ['Consolas', 'CourierNew', 'GoogleSansCode', 'RobotoMono', 'SourceCodePro']
 deco1List = ['Aclonica', 'Algerian', 'BowlbyOneSC', 'ComicSansMS', 'PermanentMarker', 'SairaStencil']
 deco2List = ['Caveat', 'Creepster', 'FontdinerSwanky', 'HomemadeApple', 'Pacifico', 'Yellowtail']
-wingdingList = ["wingding"]
+googleList = {c.removesuffix(".ttf").removesuffix("-Regular").removesuffix("-Bold").removesuffix("-Italic").removesuffix("-BoldItalic") for c in os.listdir("12SEN CharacterGenerator/Fonts/Google")}
 
 def generateFontCharacters(fontname, num_images=1):
     print(f'Creating characters for {fontname}...')
@@ -44,8 +44,7 @@ def generateFontCharacters(fontname, num_images=1):
             img = Image.new("L", img_size, color=255)
             draw = ImageDraw.Draw(img)
 
-            # myfont = fontname + "-"
-            myfont = fontname
+            myfont = fontname + "-"
 
             #NRBI[0] Random noise (±10%) added to each image
             #NRBI[1] Random angle (±20°) applied to each character
@@ -54,25 +53,25 @@ def generateFontCharacters(fontname, num_images=1):
 
             NRBI = ['F','F','F','F']
             
-            # if bold and randint(1,100) <= 30:
-            #     myfont += "Bold"
-            #     NRBI[2] = 'T'
+            if bold and randint(1,100) <= 30:
+                myfont += "Bold"
+                NRBI[2] = 'T'
                 
-            # if italic and randint(1,100) <= 30:
-            #     myfont += "Italic"
-            #     NRBI[3] = 'T'
+            if italic and randint(1,100) <= 30:
+                myfont += "Italic"
+                NRBI[3] = 'T'
 
-            # if NRBI[2] == NRBI[3] == 'F':
-            #     myfont += "Regular"
+            if NRBI[2] == NRBI[3] == 'F':
+                myfont += "Regular"
 
             font_path = "12SEN CharacterGenerator/Fonts/" + folder + "/" + myfont + ".ttf"
             try:
-                fontface = ImageFont.truetype(font_path, font_size, encoding="symb")
+                fontface = ImageFont.truetype(font_path, font_size)
             except:
                 # print(f'{font_path} does not exist; using regular')
                 myfont = fontname + "-Regular"
                 font_path = "12SEN CharacterGenerator/Fonts/" + folder + "/" + myfont + ".ttf"
-                fontface = ImageFont.truetype(font_path, font_size, encoding="symb")
+                fontface = ImageFont.truetype(font_path, font_size)
                 NRBI[2] = 'F'
                 NRBI[3] = 'F'
 
@@ -80,10 +79,10 @@ def generateFontCharacters(fontname, num_images=1):
             # ChatGPT did maths - gets the size of the text to position it at the centre of the image
             bbox = draw.textbbox((0, 0), chr(letter), font=fontface)
             text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] -  bbox[1]
+            text_height = bbox[3] - bbox[1]
             position = ((0-bbox[0]+((size-text_width)//2)),(0-bbox[1]+((size-text_height)//2)))
 
-            draw.text(position, chr(0xF000 + (letter-32)), fill="black", font=fontface)
+            draw.text(position, chr(letter), fill=False, font=fontface)
             
 
             if rotation:
@@ -109,23 +108,26 @@ os.makedirs(output_dir, exist_ok=True)
 #charlist
 characters= [i for i in range(65,91)]     #uppercase
 characters += [i for i in range(97,123)]   #lowercase
-# characters += [i for i in range(48,58)]    #numbers
-# if complexity >= 3:
-#     characters += [ord('@'), ord('#'), ord('$'), ord('%'), ord('&'), ord('+'), ord('?'), ord('<'), ord('>')]
+characters += [i for i in range(48,58)]    #numbers
+if complexity >= 3:
+    characters += [ord('@'), ord('#'), ord('$'), ord('%'), ord('&'), ord('+'), ord('?'), ord('<'), ord('>')]
 
 
-# #Iterate through the fonts in their subfolders
+#Iterate through the fonts in their subfolders
 # folderList = ['Monospace','Sans','Serif']
 # if complexity >= 3:
 #     folderList.append('Decorative')
 
 # fontList = {'Monospace': monoList, 'Sans': sansList, 'Serif': serifList, 'Decorative': deco1List}
 # if complexity >= 4:
-#     fontList['Decorative'] += deco2List
+    # fontList['Decorative'] += deco2List
 
-folderList = ["wingdings"]
-fontList = {"wingdings": wingdingList}
+folderList = ["Google"]
+fontList = {"Google": googleList}
 
 for folder in folderList:
     for fontname in fontList[folder]:
-        generateFontCharacters(fontname, num_images=num_images)
+        try:
+            generateFontCharacters(fontname, num_images=num_images)
+        except Exception as e:
+            print(e)
