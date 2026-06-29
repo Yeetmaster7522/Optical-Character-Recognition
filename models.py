@@ -12,7 +12,7 @@ from torch import nn, flatten
 import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint_sequential
 
-chunks = 2 
+CHUNKS = 2 
 
 class ocr_v1(nn.Module):
     """
@@ -54,11 +54,11 @@ class ocr_v1(nn.Module):
         )
 
     def forward(self, x):
-        x = checkpoint_sequential(self.block1, chunks, x, use_reentrant=False) #12x12
-        x = checkpoint_sequential(self.block2, chunks, x, use_reentrant=False) #4x4
+        x = checkpoint_sequential(self.block1, CHUNKS, x, use_reentrant=False) #12x12
+        x = checkpoint_sequential(self.block2, CHUNKS, x, use_reentrant=False) #4x4
         
         x = flatten(x, 1)
-        x = checkpoint_sequential(self.fcl, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
         return x
 
 class ocr_v2(nn.Module):
@@ -101,11 +101,11 @@ class ocr_v2(nn.Module):
         )
 
     def forward(self, x):
-        x = checkpoint_sequential(self.block1, chunks, x, use_reentrant=False)
-        x = checkpoint_sequential(self.block2, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.block1, CHUNKS, x, use_reentrant=False)
+        x = checkpoint_sequential(self.block2, CHUNKS, x, use_reentrant=False)
 
         x = flatten(x, 1)
-        x = checkpoint_sequential(self.fcl, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
         return x
     
 class ocr_v3(nn.Module):
@@ -147,11 +147,11 @@ class ocr_v3(nn.Module):
         )
 
     def forward(self, x):
-        x = checkpoint_sequential(self.block1, chunks, x, use_reentrant=False) #28-3+1=26 26/2=13
-        x = checkpoint_sequential(self.block2, chunks, x, use_reentrant=False) #13-3+1=11 11/2=5.5
+        x = checkpoint_sequential(self.block1, CHUNKS, x, use_reentrant=False) #28-3+1=26 26/2=13
+        x = checkpoint_sequential(self.block2, CHUNKS, x, use_reentrant=False) #13-3+1=11 11/2=5.5
 
         x = flatten(x, 1)
-        x = checkpoint_sequential(self.fcl, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
         return x
     
 class ocr_v4(nn.Module):
@@ -197,11 +197,11 @@ class ocr_v4(nn.Module):
         )
 
     def forward(self, x):
-        x = checkpoint_sequential(self.block1, chunks, x, use_reentrant=False)
-        x = checkpoint_sequential(self.block2, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.block1, CHUNKS, x, use_reentrant=False)
+        x = checkpoint_sequential(self.block2, CHUNKS, x, use_reentrant=False)
 
         x = flatten(x, 1)
-        x = checkpoint_sequential(self.fcl, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
 
         return x
 
@@ -251,11 +251,11 @@ class ocr_v5(nn.Module):
         )
 
     def forward(self, x):
-        x = checkpoint_sequential(self.block1, chunks, x, use_reentrant=False)
-        x = checkpoint_sequential(self.block2, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.block1, CHUNKS, x, use_reentrant=False)
+        x = checkpoint_sequential(self.block2, CHUNKS, x, use_reentrant=False)
 
         x = flatten(x, 1)
-        x = checkpoint_sequential(self.fcl, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
 
         return x
     
@@ -305,10 +305,10 @@ class ocr_wingding(nn.Module):
         )
 
     def forward(self, x):
-        x = checkpoint_sequential(self.block1, chunks, x, use_reentrant=False)
-        x = checkpoint_sequential(self.block2, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.block1, CHUNKS, x, use_reentrant=False)
+        x = checkpoint_sequential(self.block2, CHUNKS, x, use_reentrant=False)
 
         x = flatten(x, 1)
-        x = checkpoint_sequential(self.fcl, chunks, x, use_reentrant=False)
+        x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
 
         return x
