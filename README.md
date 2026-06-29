@@ -21,13 +21,19 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, Pillow and tqdm.
 
 ---
 
+### How to run
+
+In order to run the program you can execute main.py. However, if needed, all Python files can be run seperately. But only main.py has a working user interface.
+
+---
+
 ### Training
->
-> The training dataset for ocr_v1-5 consists of Bree Serif, EGB Garamond, Georgia, Palatino Linotype, Merriweather, Times New Roman, Arial, Calibri, Comfortaa, Monsterrat, Oxygen, Verdana, Consolas, Courier New, Google Sans Code, Roboto Mono, Source Code Pro, Aclonica, Algerian, Bowlby One SC, Comic Sans MS, Permanent Marker, Saira Stencil, Caveat, Creepster, Fontdiner Swanky, Homemade Apple, Pacifico, Yellowtail.
->
-> There were also training datasets for wingdings and the entire google font library.
->
-> All models were designed for level 4 complexity with noise, rotation, bold, and italics.
+
+The training dataset for ocr_v1-5 consists of Bree Serif, EGB Garamond, Georgia, Palatino Linotype, Merriweather, Times New Roman, Arial, Calibri, Comfortaa, Monsterrat, Oxygen, Verdana, Consolas, Courier New, Google Sans Code, Roboto Mono, Source Code Pro, Aclonica, Algerian, Bowlby One SC, Comic Sans MS, Permanent Marker, Saira Stencil, Caveat, Creepster, Fontdiner Swanky, Homemade Apple, Pacifico, Yellowtail.
+
+There were also training datasets for wingdings and the entire google font library.
+
+All models were designed for level 4 complexity with noise, rotation, bold, and italics.
 
 ---
 
