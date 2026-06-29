@@ -265,6 +265,8 @@ class Main:
         y_pred = []
         confidence_sum = [0 for _ in CHARSET]
         correct = [0 for _ in CHARSET]
+        confidence_correct = []
+        confidence_wrong = []
         totals = [0 for _ in CHARSET]
         font_counts = {}
 
@@ -287,12 +289,15 @@ class Main:
             y_pred.append(char_to_idx[pred]) # Appends predicted letter to y_pred
 
             # Adds confidence to sum at index j
-            confidence_sum[j] += float(conf)
+            confidence_sum[j] += conf
 
             # If the result was a pass then it will increment correct at index j and font
             if result == "Pass":
                 correct[j] += 1
                 font_counts[font]["correct"] += 1
+                confidence_correct.append(conf)
+            else:
+                confidence_wrong.append(conf)
 
             # Adds total at index j and font
             totals[j] += 1
@@ -313,6 +318,9 @@ class Main:
             2
             ) for k in font_keys
         ]
+
+        print(f"Avg confidence level for accurate results: {sum(confidence_correct)/len(confidence_correct):.2f}%")
+        print(f"Avg confidence level for inaccurate results: {sum(confidence_wrong)/len(confidence_wrong):.2f}%")
 
         # Show confusion matrix based of y_test and y_pred
         grapher.confusionMatrix_chart(
@@ -341,8 +349,8 @@ class Main:
 
 if __name__ == "__main__":
     main = Main(
-        model_dir="new_models/models_T", 
-        train_dir="dataset/with_noise",
-        test_dir="dataset/noise_test"
+        model_dir="models/models_F", 
+        train_dir="dataset/character_images_no_noise",
+        test_dir="dataset/character_images_no_noise"
     )
     main.loop()
