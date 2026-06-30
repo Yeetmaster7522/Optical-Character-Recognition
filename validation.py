@@ -6,6 +6,8 @@ from tqdm import tqdm
 
 from dataloader import CHARSET
 
+
+
 class Validator:
     """
     Automates prediction/validation of machine learning models
@@ -17,7 +19,7 @@ class Validator:
         device: Which device will be used for calculations during prediction
     """
     
-    def __init__(self, path: str, model: Module, root_dir: str):
+    def __init__(self, path: str, model: Module):
         """
         Initialises Validator.
 
@@ -30,15 +32,19 @@ class Validator:
         # Set class attributes
         self.path = path
         self.model = model
-        self.root_dir = root_dir
+
 
         # Finds hardware accelerators and utilises that if possible. (CUDA, ROCm, TPU, MPS)
         self.device = accelerator.current_accelerator().type if accelerator.is_available() else 'cpu'
         print(f"Using device: {self.device}")
 
+
+
     def update(self, model, path):
         self.model = model
         self.path = path
+
+
 
     def check_acc(self, fl) -> dict:
         """
@@ -47,32 +53,34 @@ class Validator:
 
         d = device(self.device)
 
+
         # Enable NVIDIA cuDNN auto tuner
         backends.cudnn.benchmark = True
+
 
         # Disable debugging APIs
         autograd.set_detect_anomaly(False)
         autograd.profiler.profile(False)
 
+
         set_float32_matmul_precision("high")
-        
+
+
         # Creates model object and puts it on self.device
         # Then loads the state_dict from saved models
         net = self.model().to(d)
         net.load_state_dict(load(self.path, weights_only=True))
         compiled_net = compile(net, mode="max-autotune")
 
+
         # Load testloader
         tl = fl.loader
-        
-        # Courtesy of Copilot. 
-        subset = tl.dataset
-        og_dataset = subset.dataset
-        indices = subset.indices
+
 
         # Amount predicted correctly and total amount of data
         correct = 0
         total = 0
+
 
         # dictionary of results
         results = {
@@ -82,6 +90,7 @@ class Validator:
             "result": [],
             "confidence score": []
         }
+
 
         # Set mode in evaluation mode and disable gradient calculation
         compiled_net.eval()
@@ -94,6 +103,7 @@ class Validator:
                 # Iterates through inputs and labels in testloader
                 for i, (images, labels) in enumerate(tl):
                     pbar.update(1)
+
                     # Puts inputs and labels on self.device
                     images, labels = images.to(d), labels.to(d)
 
@@ -106,14 +116,14 @@ class Validator:
 
                     # Iterates through given images.
                     for j in range(len(images)):
-                        # Help from Copilot.
                         # Gets index of image in the original dataset and uses it to get filename
-                        og_idx = indices[i * tl.batch_size + j]
-                        filename = og_dataset.images[og_idx]["filename"]
+                        filename = tl.dataset.images[i * tl.batch_size + j]["filename"]
+
 
                         # Gets predicted and true item
                         pred = predicted[j].item()
                         true = labels[j].item()
+
 
                         # Saves results
                         results["filename"].append(filename)
@@ -122,14 +132,19 @@ class Validator:
                         results["result"].append("Pass" if pred == true else "Fail")
                         results["confidence score"].append(f"{conf[j]:.2f}")
 
+
                         # Increments correct and total counter
                         total += 1
                         correct += (pred == true)
 
+
         # Display accuracy in 2 d.p.
         print(f"Accuracy [{total}]: {100 * correct / total:.2f}%")
 
+
         return results
+
+
 
     def save_to_csv(self, table: dict, filepath: str):
         """
@@ -144,14 +159,16 @@ class Validator:
         df = pd.DataFrame(table)
         df.to_csv(filepath, index=False)
 
+
+
 if __name__ == "__main__":
     import models
+    from dataloader import FullLoader
 
     validator = Validator(
         path="models/models_F/ocr_v5_t0.052_v0.044.pt",
-        model=models.ocr_v5,
-        root_dir="dataset/character_images_no_noise"
+        model=models.ocr_v5
     )
     print("starting validation")
-    results = validator.check_acc()
+    results = validator.check_acc(FullLoader("dataset/character_images_no_noise"))
     validator.save_to_csv(results, "results.csv")
