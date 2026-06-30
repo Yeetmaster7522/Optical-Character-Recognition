@@ -15,14 +15,14 @@ bold = True
 italic = True
 
 #Amount of samples for each character in each font
-num_images = 50
+num_images = 200
 
 #Output settings
 size = 28
 img_size = (size, size)
 font_sizes = {'Aclonica': 24, 'BowlbyOneSC': 24, 'FontdinerSwanky': 24, 'HomemadeApple': 18, 'Pacifico': 24}
 #Default font size is 28pt; if a font needs a custom size, add it to the dictionary above
-output_dir = "google_fonts"
+output_dir = "dataset/new_train"
 
 #Fonts
 #To generate characters for additional fonts:
@@ -32,9 +32,9 @@ output_dir = "google_fonts"
 serifList = ['BreeSerif', 'EBGaramond', 'Georgia', 'PalatinoLinotype', 'Merriweather', 'TimesNewRoman']
 sansList = ['Arial', 'Calibri', 'Comfortaa', 'Montserrat', 'Oxygen', 'Verdana']
 monoList = ['Consolas', 'CourierNew', 'GoogleSansCode', 'RobotoMono', 'SourceCodePro']
-deco1List = ['Aclonica', 'Algerian', 'BowlbyOneSC', 'ComicSansMS', 'PermanentMarker', 'SairaStencil']
+deco1List = ['Aclonica', 'BowlbyOneSC', 'ComicSansMS', 'PermanentMarker', 'SairaStencil']
 deco2List = ['Caveat', 'Creepster', 'FontdinerSwanky', 'HomemadeApple', 'Pacifico', 'Yellowtail']
-googleList = {c.removesuffix(".ttf").removesuffix("-Regular").removesuffix("-Bold").removesuffix("-Italic").removesuffix("-BoldItalic") for c in os.listdir("12SEN CharacterGenerator/Fonts/Google")}
+googleList = ["Average", "Maname", "RubikGlitch", "Salsa", "Sassy Frass"]
 
 def generateFontCharacters(fontname, num_images=1):
     print(f'Creating characters for {fontname}...')
@@ -114,16 +114,15 @@ if complexity >= 3:
 
 
 #Iterate through the fonts in their subfolders
-# folderList = ['Monospace','Sans','Serif']
-# if complexity >= 3:
-#     folderList.append('Decorative')
+folderList = ['Monospace','Sans','Serif']
+if complexity >= 3:
+    folderList.append('Decorative')
+folderList.append("Google")
 
-# fontList = {'Monospace': monoList, 'Sans': sansList, 'Serif': serifList, 'Decorative': deco1List}
-# if complexity >= 4:
-    # fontList['Decorative'] += deco2List
-
-folderList = ["Google"]
-fontList = {"Google": googleList}
+fontList = {'Monospace': monoList, 'Sans': sansList, 'Serif': serifList, 'Decorative': deco1List}
+if complexity >= 4:
+    fontList['Decorative'] += deco2List
+fontList["Google"] = googleList
 
 for folder in folderList:
     for fontname in fontList[folder]:
