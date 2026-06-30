@@ -1,7 +1,7 @@
 # Software AT3
 ## Due Term 2 Week 11, Wednesday 1st July 2026
 
-Goal is to create a good CNN to perform optical character recognition. ***Running on Python 3.12.3 in a virtual environment***. Execution does not require a virtual environment however it is suggested.
+Goal is to create a good CNN to perform optical character recognition. ***Running on Python 3.12.9 in a virtual environment***. Execution does not require a virtual environment however it is suggested.
 
 ---
 
@@ -23,7 +23,7 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, Pillow and tqdm.
 
 ### How to run
 
-In order to run the program you can execute main.py. However, if needed, all Python files can be run seperately. But only main.py has a working user interface.
+In order to run the program you can execute main.py. However, if needed, all Python files can be run seperately. But only main.py has a working user interface. This program should not be executed in IDLE as it will break the progress bars.
 
 ---
 

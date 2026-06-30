@@ -3,8 +3,7 @@ import os
 import models
 from training import Trainer
 from validation import Validator
-from dataloader import CHARSET, char_to_idx
-from dataloader import TrainTestLoader, FullLoader
+from dataloader import TrainTestLoader, FullLoader, CHARSET, char_to_idx
 import grapher
 
 class Main:
@@ -306,21 +305,21 @@ class Main:
         # Calculates confidence avg and percentage of correct predictions up to 2 d.p. and puts
         # them into a dictionary for plotting
         char_means = {
-            "confidence_avg": [round(conf/totals[i], 2) for i,conf in enumerate(confidence_sum)],
-            "correct_pct": [round(count/totals[i], 2) for i,count in enumerate(correct)]
+            "confidence_avg": [100*round(conf/totals[i], 2) for i,conf in enumerate(confidence_sum)],
+            "correct_pct": [100*round(count/totals[i], 2) for i,count in enumerate(correct)]
         }
 
         # Calculate accuracy per class
         font_keys = font_counts.keys()
         font_acc = [
-            round(
+            100*round(
             font_counts[k]["correct"]/font_counts[k]["total"], 
             2
             ) for k in font_keys
         ]
 
-        print(f"Avg confidence level for accurate results: {sum(confidence_correct)/len(confidence_correct):.2f}%")
-        print(f"Avg confidence level for inaccurate results: {sum(confidence_wrong)/len(confidence_wrong):.2f}%")
+        print(f"Avg confidence level for accurate results: {100 * sum(confidence_correct)/len(confidence_correct):.2f}%")
+        print(f"Avg confidence level for inaccurate results: {100 * sum(confidence_wrong)/len(confidence_wrong):.2f}%")
 
         # Show confusion matrix based of y_test and y_pred
         grapher.confusionMatrix_chart(
@@ -342,7 +341,8 @@ class Main:
             x=font_acc, 
             y=font_keys, 
             ylabel="%",
-            title="Accuracy per Font"
+            title="Accuracy per Font",
+            rotation=85
         )
 
 

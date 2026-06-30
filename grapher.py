@@ -22,7 +22,7 @@ def confusionMatrix_chart(y_test, y_pred, labels):
     
     plt.show()
 
-def groupedBar_chart(data, labels, ylabel, title=""):
+def groupedBar_chart(data, labels, ylabel, title="", rotation=0):
     # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
     fig, ax = plt.subplots(layout="constrained")
 
@@ -35,14 +35,16 @@ def groupedBar_chart(data, labels, ylabel, title=""):
     for container in res.bar_containers:
         ax.bar_label(container, padding=3)
 
+    plt.tick_params("x", rotation=rotation)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     fig.legend(loc="outside left upper")
     plt.show()
 
-def bar_chart(x, y, ylabel, title=""):
+def bar_chart(x, y, ylabel, title="", rotation=0):
     plt.bar(y, x)
 
+    plt.tick_params("x", rotation=rotation)
     plt.ylabel(ylabel)
     plt.title(title)
     plt.show()
