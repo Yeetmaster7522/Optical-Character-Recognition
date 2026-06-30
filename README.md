@@ -23,15 +23,15 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, Pillow and tqdm.
 
 ### How to run
 
-In order to run the program you can execute main.py. However, if needed, all Python files can be run seperately. But only main.py has a working user interface. This program should not be executed in IDLE as it will break the progress bars.
+In order to run the program you can execute main.py. This program should not be executed in IDLE as it will break the progress bars.
+
+If you want to run a prediction using the wingdings model you will have to remove the labels when graphing results within `Main.show_test_results()`. This is because the program does not fully support it.
 
 ---
 
 ### Training
 
-The training dataset for ocr_v1-5 consists of Bree Serif, EGB Garamond, Georgia, Palatino Linotype, Merriweather, Times New Roman, Arial, Calibri, Comfortaa, Monsterrat, Oxygen, Verdana, Consolas, Courier New, Google Sans Code, Roboto Mono, Source Code Pro, Aclonica, Algerian, Bowlby One SC, Comic Sans MS, Permanent Marker, Saira Stencil, Caveat, Creepster, Fontdiner Swanky, Homemade Apple, Pacifico, Yellowtail.
-
-There were also training datasets for wingdings and the entire google font library.
+The training dataset for ocr_v1-5 consists of Bree Serif, EGB Garamond, Georgia, Palatino Linotype, Merriweather, Times New Roman, Arial, Calibri, Comfortaa, Monsterrat, Oxygen, Verdana, Consolas, Courier New, Google Sans Code, Roboto Mono, Source Code Pro, Aclonica, Bowlby One SC, Comic Sans MS, Permanent Marker, Saira Stencil, Caveat, Creepster, Fontdiner Swanky, Homemade Apple, Pacifico, Yellowtail, Average, Maname, Rubik Glitch, Salsa, Sassy Frass, Aguafina Script, Festive.
 
 All models were designed for level 4 complexity with noise, rotation, bold, and italics.
 
@@ -43,5 +43,5 @@ All models were designed for level 4 complexity with noise, rotation, bold, and 
 > - ocr_v2_t0.026_v0.032.pt: *98.25%*
 > - ocr_v3_t0.027_v0.030.pt: *98.45%*
 > - ocr_v4_t0.051_v0.030.pt: *98.35%*
-> - ocr_v5_t0.030_v0.025.pt: *98.49%*
+> - ocr_v5_t0.008_v0.004.pt: *99.82%*
 > - ocr_wingding_t0.000_v0.000.pt: *100.00%*
