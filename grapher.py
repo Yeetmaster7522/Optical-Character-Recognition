@@ -3,17 +3,18 @@ from sklearn.metrics import ConfusionMatrixDisplay #https://stackoverflow.com/qu
 
 
 
-def line_chart(x: dict, y: list, xlabel, ylabel, title=""):
+def line_chart(x: dict, y: list, xlabel="", ylabel="", title=""):
     for key, item in x.items():
         plt.plot(y, item, label=key)
 
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
+    plt.title(title)
     plt.legend()
     plt.show()
 
 
-def confusionmatrix_chart(y_test, y_pred, labels):
+def confusionmatrix_chart(y_test: list, y_pred: list, labels: list):
     ConfusionMatrixDisplay.from_predictions(
         y_test,
         y_pred,
@@ -26,7 +27,7 @@ def confusionmatrix_chart(y_test, y_pred, labels):
     plt.show()
 
 
-def groupedbar_chart(data, labels, ylabel, title="", rotation=0):
+def groupedbar_chart(data: dict, labels: list, xlabel="", ylabel="", title="", rotation=0):
     # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
     fig, ax = plt.subplots(layout="constrained")
 
@@ -40,16 +41,18 @@ def groupedbar_chart(data, labels, ylabel, title="", rotation=0):
         ax.bar_label(container, padding=3)
 
     plt.tick_params("x", rotation=rotation)
+    plt.xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     fig.legend(loc="outside left upper")
     plt.show()
 
 
-def bar_chart(x, y, ylabel, title="", rotation=0):
+def bar_chart(x: list, y: list, xlabel="", ylabel="", title="", rotation=0):
     plt.bar(y, x)
 
     plt.tick_params("x", rotation=rotation)
+    plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
     plt.show()
