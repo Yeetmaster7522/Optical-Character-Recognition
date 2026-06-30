@@ -1,3 +1,5 @@
+from torch import nn
+
 import os
 
 import models
@@ -6,15 +8,11 @@ from validation import Validator
 from dataloader import TrainTestLoader, FullLoader, CHARSET, char_to_idx
 import grapher
 
+
+
 class Main:
     """
     Streamlines the entire ML pipeline for a user including training and testing.
-
-    Attributes:
-        model_classes: Array of nn.Modules
-        model_dir: Filepath where models are saved
-        train_dir Filepath where training images are saved
-        test_dir: Filepath where test images are saved
     """
     
     def __init__(self, model_dir="", train_dir="", test_dir=""):
@@ -28,8 +26,9 @@ class Main:
         """
         
         print("WELCOME")
-        
-        self.model_classes = [
+
+
+        self.__model_classes: list[nn.Module] = [
             models.ocr_v1,
             models.ocr_v2,
             models.ocr_v3,
@@ -37,23 +36,25 @@ class Main:
             models.ocr_v5,
             models.ocr_wingding
         ]
-        self.model_dir = model_dir
-        self.train_dir = train_dir
-        self.test_dir = test_dir
+        self.__model_dir: str = model_dir
+        self.__train_dir: str = train_dir
+        self.__test_dir: str = test_dir
 
-        self.ttl = None
-        self.fl = None
-        self.trainer = Trainer(
+
+        self.__ttl: TrainTestLoader = None
+        self.__fl: FullLoader = None
+        
+        self.__trainer: Trainer = Trainer(
             name="",
             model=None,
-            save_folder=self.model_dir,
-            root_dir=self.train_dir
+            save_folder=self.__model_dir
         )
-        self.validator = Validator(
+        self.__validator: Validator = Validator(
             path="",
-            model=None,
-            root_dir=self.test_dir
+            model=None
         )
+
+
 
     def list_models(self):
         """
@@ -62,8 +63,10 @@ class Main:
             [i]: Name of class
         """
         
-        for i in range(len(self.model_classes)):
-            print(f"[{i}]: {self.model_classes[i].__name__}")
+        for i in range(len(self.__model_classes)):
+            print(f"[{i}]: {self.__model_classes[i].__name__}")
+
+
 
     def loop(self):
         """
@@ -72,27 +75,28 @@ class Main:
         Asks user whether they want to train, predict, or exit the program.
         """
         
-        while True:
-            # Get user input
-            user_inp = self.get_inp(
-                display="\nWhat would you like to do?\n(T for train, P for predict, E for exit)\n",
-                expected=["t", "p", "e"]
-                )
+        # Get user input
+        user_inp: str = self.get_inp(
+            display="\nWhat would you like to do?\n(T for train, P for predict, E for exit)\n",
+            expected=["t", "p", "e"]
+            )
 
-            # If user wants to exit
-            if user_inp == "e":
-                break
-
-            # If user wants to train/predict
+        # If user wants to train/predict
+        if user_inp != "e":
             self.select_train_pred(user_inp)
+            self.loop()
+        # If user wants to exit then the loop() method will not be called again
 
-    def get_inp(self, display: str, expected=[]):
+
+
+    def get_inp(self, display: str, expected=[], is_filepath=False) -> str | int:
         """
         Cleanses and validates user input.
 
         Keyword arguments:
             display: What will be printed to the console
             expected (optional): User input must be one of the values listed here
+            is_filepath (optional): If true then it will ensure that user input is a filepath
         """
         
         while True:
@@ -106,12 +110,24 @@ class Main:
             except ValueError:
                 user_inp = user_inp.lower()
 
+
+            is_valid: bool = False
+
             # Returns user input if it is in expected or
             # returns user input if there is no expected values.
-            if expected == [] or user_inp in expected:
-                return user_inp
+            if expected == [] and not is_filepath or user_inp in expected:
+                is_valid = True
+            elif is_filepath and os.path.isdir(user_inp): # check if filepath exists
+                is_valid = True
+                user_inp = os.path.normpath(user_inp) # Clean up filepath in case it's messy
             else:
                 print("Invalid input")
+
+
+            if is_valid:
+                return user_inp
+
+
 
     def select_train_pred(self, choice: str):
         """
@@ -119,34 +135,40 @@ class Main:
         """
         
         # Asks the user where to get and save models if haven't already
-        if self.model_dir == "":
-            self.model_dir = self.get_inp("Where do I get and save models? ")
+        if self.__model_dir == "":
+            self.__model_dir = self.get_inp("Where do I get and save models? ")
+
 
         # Training mode
         if choice == "t":
             print("\nTraining mode chosen")
 
             # Asks user where training data is if haven't already
-            if self.train_dir == "":
-                self.train_dir = self.get_inp("Where do I get training data? ")
+            if self.__train_dir == "":
+                self.__train_dir = self.get_inp("Where do I get training data? ")
+
 
             # Lists model architectures and asks which one they would like to train
             self.list_models()
-            model_idx = self.get_inp(
+    
+            model_idx: int = self.get_inp(
                 display="Select model type from above: ",
-                expected=[i for i in range(len(self.model_classes))]
+                expected=[i for i in range(len(self.__model_classes))]
                 )
-            model = self.model_classes[model_idx]
-            print(f"Model will be saved as: {model.__name__}\nIn folder: {self.model_dir}")
+
+            model: nn.Module = self.__model_classes[model_idx]
+            print(f"Model will be saved as: {model.__name__}\nIn folder: {self.__model_dir}")
+
 
             # Update Trainer class
-            self.trainer.update(
+            self.__trainer.update(
                 name=model.__name__,
                 model=model,
-                save_folder=self.model_dir
+                save_folder=self.__model_dir
             )
-            if self.ttl == None: # Create traintest loader if not exists
-                self.ttl = TrainTestLoader(root_dir=self.train_dir)
+            if self.__ttl == None: # Create traintest loader if not exists
+                self.__ttl = TrainTestLoader(root_dir=self.__train_dir)
+
 
             # Train model
             self.train()
@@ -156,37 +178,47 @@ class Main:
             print("\nPrediction mode chosen")
 
             # Asks users where training data is if haven't already
-            if self.test_dir == "":
-                self.test_dir = self.get_inp("Where do I get testing data? ")
+            if self.__test_dir == "":
+                self.__test_dir = self.get_inp("Where do I get testing data? ")
+
 
             # Lists model architectures and asks which one they would like to test
             self.list_models()
-            model_idx = self.get_inp(
+
+            model_idx: int = self.get_inp(
                 display="Select model type from above: ",
-                expected=[i for i in range(len(self.model_classes))]
+                expected=[i for i in range(len(self.__model_classes))]
                 )
-            model = self.model_classes[model_idx]
-            
+
+            model: nn.Module = self.__model_classes[model_idx]
+
+
             # Lists saved models based off chosen model architecture and asks which one
             # they would like to test
-            files = [f for f in os.listdir(self.model_dir) if model.__name__ in f]
+            files = [f for f in os.listdir(self.__model_dir) if model.__name__ in f]
             for i in range(len(files)):
                 print(f"[{i}]: {files[i]}")
 
-            saved_idx = self.get_inp(
+
+            saved_idx: int = self.get_inp(
                 display="Select saved model from above: ",
                 expected=[i for i in range(len(files))]
             )
 
+
             # Create instance of Trainer class
-            self.validator.update(
+            self.__validator.update(
                 model=model,
-                path=f"{self.model_dir}/{files[saved_idx]}"
+                path=f"{self.__model_dir}/{files[saved_idx]}"
             )
-            if self.fl == None: # Create full loader if not exists
-                self.fl = FullLoader(root_dir=self.test_dir)
+
+            if self.__fl == None: # Create full loader if not exists
+                self.__fl = FullLoader(root_dir=self.__test_dir)
+
 
             self.test() # Predict images using model
+
+
 
     def train(self):
         """
@@ -197,7 +229,7 @@ class Main:
         """
 
         # Train model, tloss is train loss, and vloss is validation/test loss
-        tloss, vloss = self.trainer.train(self.ttl)
+        tloss, vloss = self.__trainer.train(self.__ttl)
 
         # Calculate difference between tloss and vloss over epochs
         loss_dif = [abs(t-vloss[i]) for i,t in enumerate(tloss)]
@@ -220,7 +252,9 @@ class Main:
             ylabel="Loss",
             title="Loss over epochs"
         )
-        
+
+
+
     def test(self):
         """
         Puts model into prediction mode and outputs accuracy over test dataset.
@@ -233,14 +267,16 @@ class Main:
         print("Starting test...")
 
         # Run model through images in self.test_dir and gets results
-        results = self.validator.check_acc(self.fl)
+        results = self.__validator.check_acc(self.__fl)
 
         # Save results to CSV
-        self.validator.save_to_csv(results, "results.csv")
+        self.__validator.save_to_csv(results, "results.csv")
         print("Results saved in results.csv")
 
         # Show results in graphical form
         self.show_test_results(results)
+
+
 
     def show_test_results(self, results: dict):
         """
@@ -262,12 +298,13 @@ class Main:
         # Starting values
         y_test = []
         y_pred = []
-        confidence_sum = [0 for _ in CHARSET]
-        correct = [0 for _ in CHARSET]
+        confidence_sum = [0]*len(CHARSET)
+        correct = [0]*len(CHARSET)
         confidence_correct = []
         confidence_wrong = []
-        totals = [0 for _ in CHARSET]
+        totals = [0]*len(CHARSET)
         font_counts = {}
+
 
         # Iterates through each entry in results and notes down prediction, and the actual
         # character as well as incrementing correct and totals as well as adding to sum of
@@ -290,6 +327,7 @@ class Main:
             # Adds confidence to sum at index j
             confidence_sum[j] += conf
 
+
             # If the result was a pass then it will increment correct at index j and font
             if result == "Pass":
                 correct[j] += 1
@@ -298,9 +336,11 @@ class Main:
             else:
                 confidence_wrong.append(conf)
 
+
             # Adds total at index j and font
             totals[j] += 1
             font_counts[font]["total"] += 1
+
 
         # Calculates confidence avg and percentage of correct predictions up to 2 d.p. and puts
         # them into a dictionary for plotting
@@ -308,6 +348,7 @@ class Main:
             "confidence_avg": [100*round(conf/totals[i], 2) for i,conf in enumerate(confidence_sum)],
             "correct_pct": [100*round(count/totals[i], 2) for i,count in enumerate(correct)]
         }
+
 
         # Calculate accuracy per class
         font_keys = font_counts.keys()
@@ -318,18 +359,20 @@ class Main:
             ) for k in font_keys
         ]
 
+
         print(f"Avg confidence level for accurate results: {100 * sum(confidence_correct)/len(confidence_correct):.2f}%")
         print(f"Avg confidence level for inaccurate results: {100 * sum(confidence_wrong)/len(confidence_wrong):.2f}%")
 
+
         # Show confusion matrix based of y_test and y_pred
-        grapher.confusionMatrix_chart(
+        grapher.confusionmatrix_chart(
             y_test,
             y_pred,
             labels=CHARSET
         )
 
         # Show confidence and accuracy for characters 
-        grapher.groupedBar_chart(
+        grapher.groupedbar_chart(
             char_means,
             labels=CHARSET,
             ylabel="%",
@@ -349,8 +392,8 @@ class Main:
 
 if __name__ == "__main__":
     main = Main(
-        model_dir="models/models_F", 
-        train_dir="dataset/character_images_no_noise",
-        test_dir="dataset/character_images_no_noise"
+        model_dir="C:\\Dev\\Optical-Character-Recognition\\models\\models_F", 
+        train_dir="C:\\Dev\\Optical-Character-Recognition\\dataset\\character_images_no_noise",
+        test_dir="C:\\Dev\\Optical-Character-Recognition\\dataset\\character_images_no_noise"
     )
     main.loop()

@@ -11,7 +11,11 @@ all uppercase and lowercase english letters, digit 0-9, @ # $ % & + ? < >
 from torch import nn, flatten
 from torch.utils.checkpoint import checkpoint_sequential
 
+
+
 CHUNKS = 2 
+
+
 
 class ocr_v1(nn.Module):
     """
@@ -60,6 +64,8 @@ class ocr_v1(nn.Module):
         x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
         return x
 
+
+
 class ocr_v2(nn.Module):
     """
     A child class of nn.Module.
@@ -106,7 +112,9 @@ class ocr_v2(nn.Module):
         x = flatten(x, 1)
         x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
         return x
-    
+
+
+
 class ocr_v3(nn.Module):
     """
     A child class of nn.Module.
@@ -152,7 +160,9 @@ class ocr_v3(nn.Module):
         x = flatten(x, 1)
         x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
         return x
-    
+
+
+
 class ocr_v4(nn.Module):
     """
     A child class of nn.Module. Inspired by https://arxiv.org/pdf/1512.03385v1 
@@ -203,6 +213,8 @@ class ocr_v4(nn.Module):
         x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
 
         return x
+
+
 
 class ocr_v5(nn.Module):
     """
@@ -257,7 +269,9 @@ class ocr_v5(nn.Module):
         x = checkpoint_sequential(self.fcl, CHUNKS, x, use_reentrant=False)
 
         return x
-    
+
+
+
 class ocr_wingding(nn.Module):
     """
     A child class of nn.Module. Similar architecture to ocr_v5

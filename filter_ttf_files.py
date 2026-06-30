@@ -1,3 +1,8 @@
+"""
+This file was used to extract ttf files from a github repository.
+This is seperate from the OCR program.
+"""
+
 import os
 
 master_folder = "googleFonts\\ufl"
