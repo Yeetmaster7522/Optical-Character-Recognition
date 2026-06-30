@@ -1,1 +1,10 @@
-character_images/
+models/
+new_models/
+dataset/
+__pycache__/
+.venv/
+.vscode/
+character_images_wingdings/
+googleFonts/
+google_fonts/
+results/
