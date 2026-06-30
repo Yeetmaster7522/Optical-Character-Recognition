@@ -201,27 +201,32 @@ class Main:
             # Lists saved models based off chosen model architecture and asks which one
             # they would like to test
             files = [f for f in os.listdir(self.__model_dir) if model.__name__ in f]
-            for i in range(len(files)):
-                print(f"[{i}]: {files[i]}")
+            
+            # If there are no files found it will tell the user and not do any training.
+            if len(files) != 0:
+                for i in range(len(files)):
+                    print(f"[{i}]: {files[i]}")
 
 
-            saved_idx: int = self.get_inp(
-                display="Select saved model from above: ",
-                expected=[i for i in range(len(files))]
-            )
+                saved_idx: int = self.get_inp(
+                    display="Select saved model from above: ",
+                    expected=[i for i in range(len(files))]
+                )
 
 
-            # Create instance of Trainer class
-            self.__validator.update(
-                model=model,
-                path=f"{self.__model_dir}/{files[saved_idx]}"
-            )
+                # Create instance of Trainer class
+                self.__validator.update(
+                    model=model,
+                    path=f"{self.__model_dir}/{files[saved_idx]}"
+                )
 
-            if self.__fl == None: # Create full loader if not exists
-                self.__fl = FullLoader(root_dir=self.__test_dir)
+                if self.__fl == None: # Create full loader if not exists
+                    self.__fl = FullLoader(root_dir=self.__test_dir)
 
 
-            self.test() # Predict images using model
+                self.test() # Predict images using model
+            else:
+                print("Model weights not found")
 
 
 
@@ -397,8 +402,8 @@ class Main:
 
 if __name__ == "__main__":
     main = Main(
-        model_dir="C:\\Dev\\Optical-Character-Recognition\\models\\models_F", 
-        train_dir="C:\\Dev\\Optical-Character-Recognition\\dataset\\character_images_no_noise",
-        test_dir="C:\\Dev\\Optical-Character-Recognition\\dataset\\character_images_no_noise"
+        model_dir="new_models/final", 
+        train_dir="dataset/final_train",
+        test_dir="dataset/final_test"
     )
     main.loop()

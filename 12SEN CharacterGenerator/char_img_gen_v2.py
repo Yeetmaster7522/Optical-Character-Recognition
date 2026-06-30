@@ -15,14 +15,14 @@ bold = True
 italic = True
 
 #Amount of samples for each character in each font
-num_images = 200
+num_images = 50
 
 #Output settings
 size = 28
 img_size = (size, size)
 font_sizes = {'Aclonica': 24, 'BowlbyOneSC': 24, 'FontdinerSwanky': 24, 'HomemadeApple': 18, 'Pacifico': 24}
 #Default font size is 28pt; if a font needs a custom size, add it to the dictionary above
-output_dir = "dataset/new_train"
+output_dir = "dataset/final_test"
 
 #Fonts
 #To generate characters for additional fonts:
@@ -34,7 +34,7 @@ sansList = ['Arial', 'Calibri', 'Comfortaa', 'Montserrat', 'Oxygen', 'Verdana']
 monoList = ['Consolas', 'CourierNew', 'GoogleSansCode', 'RobotoMono', 'SourceCodePro']
 deco1List = ['Aclonica', 'BowlbyOneSC', 'ComicSansMS', 'PermanentMarker', 'SairaStencil']
 deco2List = ['Caveat', 'Creepster', 'FontdinerSwanky', 'HomemadeApple', 'Pacifico', 'Yellowtail']
-googleList = ["Average", "Maname", "RubikGlitch", "Salsa", "Sassy Frass"]
+googleList = ["Average", "Maname", "RubikGlitch", "Salsa", "Sassy Frass", "AguafinaScript", "Festive"]
 
 def generateFontCharacters(fontname, num_images=1):
     print(f'Creating characters for {fontname}...')
