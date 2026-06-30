@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 from sklearn.metrics import ConfusionMatrixDisplay #https://stackoverflow.com/questions/74020233/how-to-plot-confusion-matrix-in-pytorch
 
+
+
 def line_chart(x: dict, y: list, xlabel, ylabel, title=""):
     for key, item in x.items():
         plt.plot(y, item, label=key)
@@ -10,7 +12,8 @@ def line_chart(x: dict, y: list, xlabel, ylabel, title=""):
     plt.legend()
     plt.show()
 
-def confusionMatrix_chart(y_test, y_pred, labels):
+
+def confusionmatrix_chart(y_test, y_pred, labels):
     ConfusionMatrixDisplay.from_predictions(
         y_test,
         y_pred,
@@ -22,7 +25,8 @@ def confusionMatrix_chart(y_test, y_pred, labels):
     
     plt.show()
 
-def groupedBar_chart(data, labels, ylabel, title="", rotation=0):
+
+def groupedbar_chart(data, labels, ylabel, title="", rotation=0):
     # https://matplotlib.org/stable/gallery/lines_bars_and_markers/barchart.html
     fig, ax = plt.subplots(layout="constrained")
 
@@ -40,6 +44,7 @@ def groupedBar_chart(data, labels, ylabel, title="", rotation=0):
     ax.set_title(title)
     fig.legend(loc="outside left upper")
     plt.show()
+
 
 def bar_chart(x, y, ylabel, title="", rotation=0):
     plt.bar(y, x)
