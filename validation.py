@@ -1,4 +1,4 @@
-from torch import load, device, no_grad, amp, autocast, backends, autograd, float16, compile, set_float32_matmul_precision
+from torch import load, device, no_grad, autocast, backends, autograd, float16, compile, set_float32_matmul_precision
 from torch import max as tmax
 from torch.nn import Module, functional
 import pandas as pd
@@ -11,11 +11,6 @@ from dataloader import CHARSET
 class Validator:
     """
     Automates prediction/validation of machine learning models
-
-    Attributes:
-        path: Filepath where model is saved
-        model: Which model architecture to use
-        device: Which device will be used for calculations during prediction
     """
     
     def __init__(self, path: str, model: Module, device: str):
@@ -29,15 +24,15 @@ class Validator:
         """
         
         # Set class attributes
-        self.path = path
-        self.model = model
-        self.device = device
+        self.__path = path
+        self.__model = model
+        self.__device = device
 
 
 
     def update(self, model, path):
-        self.model = model
-        self.path = path
+        self.__model = model
+        self.__path = path
 
 
 
@@ -46,7 +41,7 @@ class Validator:
         Runs model in prediction mode though data in self.root_dir
         """
 
-        d = device(self.device)
+        d = device(self.__device)
 
 
         # Enable NVIDIA cuDNN auto tuner
@@ -63,8 +58,8 @@ class Validator:
 
         # Creates model object and puts it on self.device
         # Then loads the state_dict from saved models
-        net = self.model().to(d)
-        net.load_state_dict(load(self.path, weights_only=True))
+        net = self.__model().to(d)
+        net.load_state_dict(load(self.__path, weights_only=True))
         compiled_net = compile(net, mode="max-autotune")
 
 
@@ -102,7 +97,7 @@ class Validator:
                     # Puts inputs and labels on self.device
                     images, labels = images.to(d), labels.to(d)
 
-                    with autocast(device_type=self.device, dtype=float16):
+                    with autocast(device_type=self.__device, dtype=float16):
                         # Get top prediction and confidence
                         outputs = compiled_net(images)
 
@@ -162,7 +157,8 @@ if __name__ == "__main__":
 
     validator = Validator(
         path="models/models_F/ocr_v5_t0.052_v0.044.pt",
-        model=models.ocr_v5
+        model=models.ocr_v5,
+        device="cpu"
     )
     print("starting validation")
     results = validator.check_acc(FullLoader("dataset/character_images_no_noise"))

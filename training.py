@@ -1,8 +1,6 @@
 import torch.optim as optim
 from torch import nn, save, device, no_grad, amp, autocast, backends, autograd, float16, compile, set_float32_matmul_precision
 
-import matplotlib.pyplot as plt
-
 from tqdm import tqdm
 
 from dataloader import TrainTestLoader
@@ -53,21 +51,21 @@ class Trainer:
         """
 
         # Setting class attributes
-        self.name = name
-        self.model = model
-        self.save_folder = save_folder
-        self.max_epochs = max_epochs
-        self.lr = lr
-        self.tloss_checkpoint = tloss_checkpoint
-        self.max_patience = max_patience
-        self.device = device
+        self.__name = name
+        self.__model = model
+        self.__save_folder = save_folder
+        self.__max_epochs = max_epochs
+        self.__lr = lr
+        self.__tloss_checkpoint = tloss_checkpoint
+        self.__max_patience = max_patience
+        self.__device = device
 
 
 
     def update(self, name, model, save_folder):
-        self.name = name
-        self.model = model
-        self.save_folder = save_folder
+        self.__name = name
+        self.__model = model
+        self.__save_folder = save_folder
 
 
 
@@ -92,7 +90,7 @@ class Trainer:
             ttl: TrainTestLoader class
         """
 
-        d = device(self.device)
+        d = device(self.__device)
 
 
         # Enable NVIDIA cuDNN auto tuner
@@ -108,7 +106,7 @@ class Trainer:
 
 
         # Creates and compiles model object
-        net = self.model().to(d)
+        net = self.__model().to(d)
         
         # Leverage Triton or template based matrix multiplications with CUDA graphs
         compiled_net = compile(net, mode="max-autotune")
@@ -116,7 +114,7 @@ class Trainer:
 
         # States criteria to evaluate loss and optimiser
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.AdamW(compiled_net.parameters(), lr=self.lr)
+        optimizer = optim.AdamW(compiled_net.parameters(), lr=self.__lr)
 
 
         # Load train and test loader
@@ -128,15 +126,15 @@ class Trainer:
         tlosses = []
         vlosses = []
 
-        lowest_loss = self.tloss_checkpoint # Lowest loss achieved
+        lowest_loss = self.__tloss_checkpoint # Lowest loss achieved
         patience_counter = 0 # Epochs gone without achieving a new lowest loss
 
 
         # Create GradScaler once at beginning of training
-        scaler = amp.GradScaler(self.device)
+        scaler = amp.GradScaler(self.__device)
 
         # Start training
-        for epoch in range(self.max_epochs):
+        for epoch in range(self.__max_epochs):
             running_tloss = 0
             running_vloss = 0
 
@@ -157,7 +155,7 @@ class Trainer:
                     optimizer.zero_grad(set_to_none=True)
 
                     # Runs forward pass with autocasting
-                    with autocast(device_type=self.device, dtype=float16):
+                    with autocast(device_type=self.__device, dtype=float16):
                         outputs = compiled_net(inputs)
                         loss = criterion(outputs, labels)
 
@@ -185,7 +183,7 @@ class Trainer:
 
                         vinputs, vlabels = vinputs.to(d), vlabels.to(d)
 
-                        with autocast(device_type=self.device, dtype=float16):
+                        with autocast(device_type=self.__device, dtype=float16):
                             # Get outputs and calculate validation loss
                             voutputs = compiled_net(vinputs)
                             vloss = criterion(voutputs, vlabels)
@@ -213,7 +211,7 @@ class Trainer:
                 lowest_loss = vloss
                 patience_counter = 0
 
-                self.save_model(net.state_dict(), f"{self.save_folder}/{self.name}_t{tloss:.3f}_v{vloss:.3f}.pt")
+                self.save_model(net.state_dict(), f"{self.__save_folder}/{self.__name}_t{tloss:.3f}_v{vloss:.3f}.pt")
                 print("\t|-> Model saved")
             else:
                 patience_counter += 1
@@ -221,11 +219,11 @@ class Trainer:
 
             # If ran out of patience then will stop training
             # Else outputs how much patience it has used up
-            if patience_counter > self.max_patience:
+            if patience_counter > self.__max_patience:
                 print("\t|-> EARLY STOPPING TRIGGERED")
                 break
             else:
-                print(f"\t|-> Patience: {patience_counter}/{self.max_patience}")
+                print(f"\t|-> Patience: {patience_counter}/{self.__max_patience}")
 
 
         return tlosses, vlosses
@@ -239,29 +237,10 @@ if __name__ == "__main__":
         name=model.__name__,
         model=model,
         save_folder="models/models_F",
-        max_epochs=10
+        device="cpu"
     )
     # Train model, tloss is train loss, and vloss is validation/test loss
     tloss, vloss = trainer.train()
 
-    # Calculate difference between tloss and vloss over epochs
-    loss_dif = [abs(t-vloss[i]) for i,t in enumerate(tloss)]
-
-    # Finished training and creating graphs
+    # Finished training
     print("Training Finished!")
-
-    # Creates an array of epoch numbers from 1 to n
-    epochs = [e+1 for e in range(len(tloss))]
-
-    # Plot training and validation loss
-    plt.plot(epochs, tloss, color="red", label="Train loss")
-    plt.plot(epochs, vloss, color="green", label="Test loss")
-    
-    # Plot loss difference between tloss and vloss
-    plt.plot(epochs, loss_dif, color="blue", linestyle="-.", label="Loss diff")
-    
-    # Show graph
-    plt.xlabel("Epochs")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.show()
