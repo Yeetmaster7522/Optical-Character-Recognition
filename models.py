@@ -9,7 +9,6 @@ all uppercase and lowercase english letters, digit 0-9, @ # $ % & + ? < >
 """
 
 from torch import nn, flatten
-import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint_sequential
 
 CHUNKS = 2 
