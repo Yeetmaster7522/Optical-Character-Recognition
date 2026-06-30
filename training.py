@@ -1,5 +1,5 @@
 import torch.optim as optim
-from torch import nn, save, accelerator, device, no_grad, amp, autocast, backends, autograd, float16, compile, set_float32_matmul_precision
+from torch import nn, save, device, no_grad, amp, autocast, backends, autograd, float16, compile, set_float32_matmul_precision
 
 import matplotlib.pyplot as plt
 
@@ -17,7 +17,7 @@ class Trainer:
         name: What the model weights will be saved as on hard drive
         model: What model architecture will be trained
         save_folder: Filepath where model weights will be saved
-        root_dir: Filepath to access training data
+        device: What device to use for computation
         max_epochs: Epoch at which training will always stop at (if early stopping not achieved)
         lr: Learning rate used for training
         tloss_checkpoint: Checkpoint for training loss at which model weights will start being
@@ -31,6 +31,7 @@ class Trainer:
             name: str,
             model: nn.Module,
             save_folder: str,
+            device: str,
             max_epochs=100,
             lr=2e-3,
             tloss_checkpoint=0.18,
@@ -43,12 +44,12 @@ class Trainer:
             name: What the model weights will be saved as on hard drive
             model: What model architecture will be trained
             save_folder: Filepath where model weights will be saved
-            root_dir: Filepath to access training data
-            max_epochs: Epoch at which training will always stop at (if early stopping not achieved)
-            lr: Learning rate used for training
-            tloss_checkpoint: Checkpoint for training loss at which model weights will start being
+
+            max_epochs (optional): Epoch at which training will always stop at (if early stopping not achieved)
+            lr (optional): Learning rate used for training
+            tloss_checkpoint (optional): Checkpoint for training loss at which model weights will start being
             saved
-            max_patience: How long to wait for model training loss to drop before stopping training
+            max_patience (optional): How long to wait for model training loss to drop before stopping training
         """
 
         # Setting class attributes
@@ -59,11 +60,7 @@ class Trainer:
         self.lr = lr
         self.tloss_checkpoint = tloss_checkpoint
         self.max_patience = max_patience
-
-
-        # Finds hardware accelerators and utilises that if possible. (CUDA, ROCm, TPU, MPS)
-        self.device = accelerator.current_accelerator().type if accelerator.is_available() else 'cpu'
-        print(f"Using device: {self.device}")
+        self.device = device
 
 
 

@@ -1,4 +1,4 @@
-from torch import load, device, accelerator, no_grad, amp, autocast, backends, autograd, float16, compile, set_float32_matmul_precision
+from torch import load, device, no_grad, amp, autocast, backends, autograd, float16, compile, set_float32_matmul_precision
 from torch import max as tmax
 from torch.nn import Module, functional
 import pandas as pd
@@ -15,28 +15,23 @@ class Validator:
     Attributes:
         path: Filepath where model is saved
         model: Which model architecture to use
-        root_dir: Filepath where test images are
         device: Which device will be used for calculations during prediction
     """
     
-    def __init__(self, path: str, model: Module):
+    def __init__(self, path: str, model: Module, device: str):
         """
         Initialises Validator.
 
         Keyword arguments:
             path: Filepath where model is saved
             model: Which model architecture to use
-            root_dir: Filepath where test images are
+            device: What device to use for computation
         """
         
         # Set class attributes
         self.path = path
         self.model = model
-
-
-        # Finds hardware accelerators and utilises that if possible. (CUDA, ROCm, TPU, MPS)
-        self.device = accelerator.current_accelerator().type if accelerator.is_available() else 'cpu'
-        print(f"Using device: {self.device}")
+        self.device = device
 
 
 

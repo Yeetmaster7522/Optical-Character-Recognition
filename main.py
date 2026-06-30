@@ -1,4 +1,4 @@
-from torch import nn
+from torch import nn, accelerator
 
 import os
 
@@ -24,9 +24,6 @@ class Main:
             train_dir: Filepath where training images are saved
             test_dir: Filepath where test images are saved
         """
-        
-        print("WELCOME")
-
 
         self.__model_classes: list[nn.Module] = [
             models.ocr_v1,
@@ -43,16 +40,24 @@ class Main:
 
         self.__ttl: TrainTestLoader = None
         self.__fl: FullLoader = None
+
+        # Finds hardware accelerators and utilises that if possible. (CUDA, ROCm, TPU, MPS)
+        device = accelerator.current_accelerator().type if accelerator.is_available() else 'cpu'
+        print(f"Using device: {device}")
         
         self.__trainer: Trainer = Trainer(
             name="",
             model=None,
-            save_folder=self.__model_dir
+            save_folder=self.__model_dir,
+            device=device
         )
         self.__validator: Validator = Validator(
             path="",
-            model=None
+            model=None,
+            device=device
         )
+
+        print("WELCOME")
 
 
 
