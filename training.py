@@ -93,8 +93,8 @@ class Trainer:
         d = device(self.__device)
 
 
-        # Enable NVIDIA cuDNN auto tuner
-        backends.cudnn.benchmark = True
+        # NVIDIA cuDNN auto tuner
+        backends.cudnn.benchmark = False
 
 
         # Disable debugging APIs
