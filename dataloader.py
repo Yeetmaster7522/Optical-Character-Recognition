@@ -140,6 +140,10 @@ class BaseLoader:
     @property
     def batch_size(self):
         return self.__batch_size
+    
+    @property
+    def generator(self):
+        return self.__generator
 
 class TrainTestLoader(BaseLoader):
     """
