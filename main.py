@@ -224,7 +224,7 @@ class Main:
                     self.__fl = FullLoader(root_dir=self.__test_dir)
 
 
-                self.test() # Predict images using model
+                self.test("wingding" in model.__name__) # Predict images using model
             else:
                 print("Model weights not found")
 
@@ -265,7 +265,7 @@ class Main:
 
 
 
-    def test(self):
+    def test(self, is_wingdings=False):
         """
         Puts model into prediction mode and outputs accuracy over test dataset.
 
@@ -284,7 +284,7 @@ class Main:
         print("Results saved in results.csv")
 
         # Show results in graphical form
-        self.show_test_results(results)
+        self.show_test_results(results, is_wingdings)
 
 
 
@@ -308,12 +308,20 @@ class Main:
         # Starting values
         y_test = []
         y_pred = []
-        confidence_sum = [0]*len(CHARSET)
-        correct = [0]*len(CHARSET)
+        
         confidence_correct = []
         confidence_wrong = []
-        totals = [0]*len(CHARSET)
+        
         font_counts = {}
+
+        if is_wingdings:
+            confidence_sum = [0]*len(CHARSET_W)
+            correct = [0]*len(CHARSET_W)
+            totals = [0]*len(CHARSET_W)
+        else:
+            confidence_sum = [0]*len(CHARSET)
+            correct = [0]*len(CHARSET)
+            totals = [0]*len(CHARSET)
 
 
         # Iterates through each entry in results and notes down prediction, and the actual
@@ -371,7 +379,10 @@ class Main:
 
 
         print(f"Avg confidence level for accurate results: {100 * sum(confidence_correct)/len(confidence_correct):.2f}%")
-        print(f"Avg confidence level for inaccurate results: {100 * sum(confidence_wrong)/len(confidence_wrong):.2f}%")
+        try:
+            print(f"Avg confidence level for inaccurate results: {100 * sum(confidence_wrong)/len(confidence_wrong):.2f}%")
+        except ZeroDivisionError:
+            pass
 
 
         # Change label display if wingdings model
@@ -412,7 +423,7 @@ class Main:
 if __name__ == "__main__":
     main = Main(
         model_dir="release", 
-        train_dir="character_images_wingdings",
-        test_dir="dataset/final_test"
+        train_dir="dataset/wingdings",
+        test_dir="dataset/wingdings_test"
     )
     main.loop()
