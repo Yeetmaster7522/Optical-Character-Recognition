@@ -25,7 +25,7 @@ Requires PyTorch, Torchvision, scikit-learn, Matplotlib, Numpy, Pillow and tqdm.
 
 In order to run the program you can execute main.py. This program should not be executed in IDLE as it will break the progress bars.
 
-If you want to run a prediction using the wingdings model you will have to remove the labels when graphing results within `Main.show_test_results()`. This is because the program does not fully support it.
+If you have a wingdings model that you would like to use in prediction mode, the filename of the saved model must include "wingding".
 
 ---
 

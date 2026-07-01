@@ -5,7 +5,7 @@ import os
 import models
 from training import Trainer
 from validation import Validator
-from dataloader import TrainTestLoader, FullLoader, CHARSET, char_to_idx
+from dataloader import TrainTestLoader, FullLoader, CHARSET, char_to_idx, CHARSET_W
 import grapher
 
 
@@ -224,7 +224,7 @@ class Main:
                     self.__fl = FullLoader(root_dir=self.__test_dir)
 
 
-                self.test() # Predict images using model
+                self.test("wingding" in model.__name__) # Predict images using model
             else:
                 print("Model weights not found")
 
@@ -265,7 +265,7 @@ class Main:
 
 
 
-    def test(self):
+    def test(self, is_wingdings=False):
         """
         Puts model into prediction mode and outputs accuracy over test dataset.
 
@@ -284,11 +284,11 @@ class Main:
         print("Results saved in results.csv")
 
         # Show results in graphical form
-        self.show_test_results(results)
+        self.show_test_results(results, is_wingdings)
 
 
 
-    def show_test_results(self, results: dict):
+    def show_test_results(self, results: dict, is_wingdings=False):
         """
         Turns data from results into a confusion matrix and bar charts for confidence and
         accuracy per character.
@@ -308,12 +308,20 @@ class Main:
         # Starting values
         y_test = []
         y_pred = []
-        confidence_sum = [0]*len(CHARSET)
-        correct = [0]*len(CHARSET)
+        
         confidence_correct = []
         confidence_wrong = []
-        totals = [0]*len(CHARSET)
+        
         font_counts = {}
+
+        if is_wingdings:
+            confidence_sum = [0]*len(CHARSET_W)
+            correct = [0]*len(CHARSET_W)
+            totals = [0]*len(CHARSET_W)
+        else:
+            confidence_sum = [0]*len(CHARSET)
+            correct = [0]*len(CHARSET)
+            totals = [0]*len(CHARSET)
 
 
         # Iterates through each entry in results and notes down prediction, and the actual
@@ -371,20 +379,31 @@ class Main:
 
 
         print(f"Avg confidence level for accurate results: {100 * sum(confidence_correct)/len(confidence_correct):.2f}%")
-        print(f"Avg confidence level for inaccurate results: {100 * sum(confidence_wrong)/len(confidence_wrong):.2f}%")
+        try:
+            print(f"Avg confidence level for inaccurate results: {100 * sum(confidence_wrong)/len(confidence_wrong):.2f}%")
+        except ZeroDivisionError:
+            pass
+
+
+        # Change label display if wingdings model
+        if is_wingdings:
+            display_labels = CHARSET_W
+        else:
+            display_labels = CHARSET
 
 
         # Show confusion matrix based of y_test and y_pred
         grapher.confusionmatrix_chart(
             y_test,
             y_pred,
-            labels=CHARSET
+            labels=display_labels
         )
 
         # Show confidence and accuracy for characters 
         grapher.groupedbar_chart(
             char_means,
-            labels=CHARSET,
+            labels=display_labels,
+            xlabel="Character",
             ylabel="%",
             title="Confidence and Accuracy per Character"
         )
@@ -393,6 +412,7 @@ class Main:
         grapher.bar_chart(
             x=font_acc, 
             y=font_keys, 
+            xlabel="Font",
             ylabel="%",
             title="Accuracy per Font",
             rotation=85
@@ -402,8 +422,8 @@ class Main:
 
 if __name__ == "__main__":
     main = Main(
-        model_dir="new_models/final", 
-        train_dir="dataset/final_train",
-        test_dir="dataset/final_test"
+        model_dir="release", 
+        train_dir="dataset/wingdings",
+        test_dir="dataset/wingdings_test"
     )
     main.loop()
