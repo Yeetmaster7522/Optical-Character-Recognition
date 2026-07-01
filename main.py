@@ -141,7 +141,7 @@ class Main:
         
         # Asks the user where to get and save models if haven't already
         if self.__model_dir == "":
-            self.__model_dir = self.get_inp("Where do I get and save models? ")
+            self.__model_dir = self.get_inp("Where do I get and save models? ", is_filepath=True)
 
 
         # Training mode
@@ -150,7 +150,7 @@ class Main:
 
             # Asks user where training data is if haven't already
             if self.__train_dir == "":
-                self.__train_dir = self.get_inp("Where do I get training data? ")
+                self.__train_dir = self.get_inp("Where do I get training data? ", is_filepath=True)
 
 
             # Lists model architectures and asks which one they would like to train
@@ -184,7 +184,7 @@ class Main:
 
             # Asks users where training data is if haven't already
             if self.__test_dir == "":
-                self.__test_dir = self.get_inp("Where do I get testing data? ")
+                self.__test_dir = self.get_inp("Where do I get testing data? ", is_filepath=True)
 
 
             # Lists model architectures and asks which one they would like to test
@@ -422,8 +422,8 @@ class Main:
 
 if __name__ == "__main__":
     main = Main(
-        model_dir="release", 
-        train_dir="dataset/wingdings",
-        test_dir="dataset/wingdings_test"
+        # model_dir="release", 
+        # train_dir="dataset/wingdings",
+        # test_dir="dataset/wingdings_test"
     )
     main.loop()
