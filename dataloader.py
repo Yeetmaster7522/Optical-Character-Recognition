@@ -35,6 +35,12 @@ CHARSET = (
 
 char_to_idx = {c: i for i, c in enumerate(CHARSET)}
 
+# Version of CHARSET but for wingding graphing compat
+CHARSET_W = (
+    [chr(i) for i in range(65, 91)] +      # A–Z
+    [chr(i) for i in range(97, 123)]     # a–z
+)
+
 
 
 
